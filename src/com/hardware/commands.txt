@@ -1,0 +1,154 @@
+Command format:
+---------------------------------------------------
+<Command code>: <name> <argument1> <argument2> ...
+
+Special Commands:
+---------------------------------------------------
+0x00: NOP
+    Description:
+        A null operation.
+0x01: INPUT
+    Description:
+        Request a 16-bit integer from the console.
+        Stores the value in $rs.
+0x02: INPUT_CHAR
+    Description:
+        Request a single character from the console.
+        Stores the value in $rs.
+
+
+Register-Register Commands:
+---------------------------------------------------
+0x03: ADD <reg1> <reg2> <reg3>
+    Description:
+        Adds the value in <reg1> to the value in
+        <reg2> and stores the result in <reg3>.
+0x04: SUBT <reg1> <reg2> <reg3>
+    Description:
+        Subtracts the value in <reg1> by the
+        value in <reg2> and stores the result in
+        <reg3>.
+0x05: MULT <reg1> <reg2> <reg3>
+    Description:
+        Multiplies the value in <reg1> with the
+        value in <reg2> and stores the result in
+        <reg3>.
+0x06: DIV <reg1> <reg2> <reg3>
+    Description:
+        Divides the value in <reg1> by the
+        value in <reg2> and stores the result in
+        <reg3>.
+0x07: NEG <reg1> <reg2>
+    Description:
+        Stores the bitwise negation of the value in
+        <reg1> in <reg2>
+0x08: AND <reg1> <reg2> <reg3>
+    Description:
+        Bitwise ANDs the values in <reg1> and <reg2>
+        and stores the result in <reg3>
+0x09: OR <reg1> <reg2> <reg3>
+    Description:
+        Bitwise ORs the value in <reg1> and <reg2>
+        and stores the result in <reg3>
+0x0A: GT <reg1> <reg2> <reg3>
+    Description:
+        Compares the values in <reg1> and <reg2> and
+        stores 1 in <reg3> if the value in <reg1> is
+        greater than <reg2>. Stores 0 in <reg3>
+        otherwise.
+0x0B: LT <reg1> <reg2> <reg3>
+    Description:
+        Compares the values in <reg1> and <reg2> and
+        stores 1 in <reg3> if the value in <reg1> is
+        less than <reg2>. Stores 0 in <reg3>
+        otherwise.
+0x0C: EQ <reg1> <reg2> <reg3>
+    Description:
+        Compares the values in <reg1> and <reg2> and
+        stores 1 in <reg3> if the value in <reg1> is
+        equal to <reg2>. Stores 0 in <reg3>
+        otherwise.
+0x0D: BRANCH <reg1> <reg2>
+    Description:
+        Loads <reg2> into $pc if the value in <reg1>
+        is non-zero.
+0x0E: JUMP <reg1>
+    Description:
+        Loads the value in <reg1> into $pc.
+0x0F: LOAD_RA <reg1>
+    Description:
+        Loads the value in $ra into <reg1>.
+0x10: LOAD_SP <reg1>
+    Description:
+        Loads the value in $sp into <reg1>.
+0x11: LOAD_PC <reg1>
+    Description:
+        Loads the value in $pc into <reg1>.
+0x12: LOAD_HP <reg1>
+    Description:
+        Loads the value in $hp into <reg1>.
+0x13: LOAD_RS <reg1>
+    Description:
+        Loads the value in $rs into <reg1>.
+0x14: STORE_RA <reg1>
+    Description:
+        Stores the value in <reg1> in $ra.
+0x15: STORE_SP <reg1>
+    Description:
+        Stores the value in <reg1> in $sp.
+0x16: STORE_HP <reg1>
+    Description:
+        Stores the value in <reg1> in $hp.
+0x17: STORE_RS <reg1>
+    Description:
+        Stores the value in <reg1> in $rs.
+0x18: OUTPUT <reg1>
+    Description:
+        Writes the integer value stored in <reg1>
+        to the console.
+0x19: OUTPUT_CHAR <reg1>
+    Description:
+        Writes the character value stored in <reg1>
+        to the console. (Only the least sig byte will
+        be converted.)
+0x1A: PUSH_STK <reg1>
+    Description:
+        Pushes the value in <reg1> onto the stack.
+0x1B: POP_STK <reg1>
+    Description:
+        Pops the 16-bit value on top of stack and
+        stores it in <reg1>.
+0x1C: SPLIT <reg1> <reg2> <reg3>
+    Description:
+       Splits the 16-bit value in <reg1> into two
+       bytes and stores the most sig byte in <reg2>
+       and the least sig byte in <reg3>
+
+Address Commands:
+---------------------------------------------------
+0x1D: LOAD <reg1> <reg2>
+    Description:
+        Load the 16-bit value at the address stored
+        in <reg1> into <reg2>.
+0x1E: STORE <reg1> <reg2>
+    Description:
+        Store the 16-bit value in <reg2> at the
+        address stored in <reg1>.
+0x1F: OUTPUT_STR <reg1>
+    Description:
+        Write the null terminated string stored at
+        the address stored in <reg1> to the console.
+0x20: CORE_DUMP <reg1> <reg2>
+    Description:
+        Write a number of values equal to the value
+        stored in <reg2> starting at the address
+        stored in <reg1> to the console.
+
+Literal Commands:
+----------------------------------------------------
+0x21: LOAD_LIT <number literal>
+    Description:
+        Loads <number literal> into $rs.
+0x22: JUMP_LIT <number literal>
+    Description:
+        Loads <number literal> into $pc.

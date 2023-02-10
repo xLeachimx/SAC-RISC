@@ -1,0 +1,77 @@
+SAC-RISC is a 16-bit VM with the following traits:
+1) 16 bit addressable RAM
+5) 16-bit word size
+2) 65,536 words of RAM
+3) Programs stored in RAM
+4) 16-bit integer-only arithmetic
+5) Two's compliment integers
+6) 24-bit (3 byte) instructions
+7) Single running program
+
+The SAC-RISC CPU has the following features:
+1) 16 general purpose registers
+2) 5 Special Registers:
+    $ra: Register for a return address.
+    $sp: Register containing the stack pointer.
+    $hp: Register containing the heap pointer.
+    $pc: Register containing the program counter.
+    $rs: Register containing intermediate values.
+3) Register-Register Commands
+    8-bits: Command code
+    4-bits: Register 1 - argument 1
+    4-bits: Register 2 - argument 2
+    4-bits: Register 3 - storage register
+    4-bits: Blank
+4) Address Commands:
+    8-bits: Command code
+    8-bits: Register containing address
+    8-bit: Blank
+5) Special Commands:
+    8-bits: Command code
+    16-bits: Blank
+6) Literal Commands:
+    8-bits: Command code
+    16-bits: Literal Value
+
+The SAC-RISC CPU has the following Commands:
+0) Special Commands:
+    NOP,
+    INPUT,
+    INPUT_CHAR
+1) Register-Register:
+    ADD,
+    SUBT,
+    MULT,
+    DIV,
+    NEG,
+    AND,
+    OR,
+    GT,
+    LT,
+    EQ,
+    BRANCH,
+    JUMP,
+    LOAD_RA,
+    LOAD_SP,
+    LOAD_PC,
+    LOAD_HP,
+    LOAD_RS,
+    STORE_RA,
+    STORE_SP,
+    STORE_HP,
+    STORE_RS,
+    OUTPUT,
+    OUTPUT_CHAR,
+    PUSH_STK,
+    POP_STK,
+    SPLIT
+2) Address Commands:
+    LOAD,
+    STORE,
+    OUTPUT_STR,
+    CORE_DUMP
+3) Literal Commands:
+    LOAD_LIT,
+    JUMP_LIT
+Total Commands: 35
+Command Descriptions in commands.txt
