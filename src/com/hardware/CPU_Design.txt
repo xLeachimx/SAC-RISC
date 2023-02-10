@@ -46,6 +46,8 @@ The SAC-RISC CPU has the following Commands:
     NEG,
     AND,
     OR,
+    LSHIFT,
+    RSHIFT,
     GT,
     LT,
     EQ,
@@ -67,11 +69,15 @@ The SAC-RISC CPU has the following Commands:
     SPLIT
 2) Address Commands:
     LOAD,
+    LOAD_L_BYTE,
+    LOAD_R_BYTE,
     STORE,
+    STORE_L_BYTE,
+    STORE_R_BYTE,
     OUTPUT_STR,
     CORE_DUMP
 3) Literal Commands:
     LOAD_LIT,
     JUMP_LIT
-Total Commands: 35
+Total Commands: 41
 Command Descriptions in commands.txt
