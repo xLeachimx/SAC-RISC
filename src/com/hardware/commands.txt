@@ -15,6 +15,9 @@ Special Commands:
     Description:
         Request a single character from the console.
         Stores the value in $rs.
+0xFF: HALT
+    Description:
+        Halts execution.
 
 
 Register-Register Commands:
@@ -83,50 +86,26 @@ Register-Register Commands:
 0x10: JUMP <reg1>
     Description:
         Loads the value in <reg1> into $pc.
-0x11: LOAD_RA <reg1>
+0x11: COPY <reg1> <reg2>
     Description:
-        Loads the value in $ra into <reg1>.
-0x12: LOAD_SP <reg1>
-    Description:
-        Loads the value in $sp into <reg1>.
-0x13: LOAD_PC <reg1>
-    Description:
-        Loads the value in $pc into <reg1>.
-0x14: LOAD_HP <reg1>
-    Description:
-        Loads the value in $hp into <reg1>.
-0x15: LOAD_RS <reg1>
-    Description:
-        Loads the value in $rs into <reg1>.
-0x16: STORE_RA <reg1>
-    Description:
-        Stores the value in <reg1> in $ra.
-0x17: STORE_SP <reg1>
-    Description:
-        Stores the value in <reg1> in $sp.
-0x18: STORE_HP <reg1>
-    Description:
-        Stores the value in <reg1> in $hp.
-0x19: STORE_RS <reg1>
-    Description:
-        Stores the value in <reg1> in $rs.
-0x1A: OUTPUT <reg1>
+        Copies the value in <reg1> into the value in <reg2>.
+0x12: OUTPUT <reg1>
     Description:
         Writes the integer value stored in <reg1>
         to the console.
-0x1B: OUTPUT_CHAR <reg1>
+0x13: OUTPUT_CHAR <reg1>
     Description:
         Writes the character value stored in <reg1>
         to the console. (Only the least sig byte will
         be converted.)
-0x1C: PUSH_STK <reg1>
+0x14: PUSH_STK <reg1>
     Description:
         Pushes the value in <reg1> onto the stack.
-0x1D: POP_STK <reg1>
+0x15: POP_STK <reg1>
     Description:
         Pops the 16-bit value on top of stack and
         stores it in <reg1>.
-0x1E: SPLIT <reg1> <reg2> <reg3>
+0x16: SPLIT <reg1> <reg2> <reg3>
     Description:
        Splits the 16-bit value in <reg1> into two
        bytes and stores the most sig byte in <reg2>
@@ -134,37 +113,28 @@ Register-Register Commands:
 
 Address Commands:
 ---------------------------------------------------
-0x1F: LOAD <reg1> <reg2>
+0x17: LOAD <reg1> <reg2>
     Description:
         Load the 16-bit value at the address stored
         in <reg1> into <reg2>.
-0x20: LOAD_L_BYTE <reg1> <reg2>
+0x18: LOAD_BYTE <reg1> <reg2>
     Description:
-        Load the least sig byte at the address stored
+        Load the byte at the address stored
         in <reg1> into <reg2>.
-0x21: LOAD_R_BYTE <reg1> <reg2>
-    Description:
-        Load the most sig byte at the address stored
-        in <reg1> into <reg2>.
-0x22: STORE <reg1> <reg2>
+0x19: STORE <reg1> <reg2>
     Description:
         Store the 16-bit value in <reg2> at the
         address stored in <reg1>.
-0x23: STORE_L_BYTE <reg1> <reg2>
+0x1A: STORE_BYTE <reg1> <reg2>
     Description:
         Store the least sig byte of the value in <reg2>
-        into the most sig byte at the address stored in
+        into RAM at the address stored in
         <reg1>.
-0x24: STORE_R_BYTE <reg1> <reg2>
-    Description:
-        Store the least sig byte of the value in <reg2>
-        into the least sig byte at the address stored in
-        <reg1>.
-0x25: OUTPUT_STR <reg1>
+0x1B: OUTPUT_STR <reg1>
     Description:
         Write the null terminated string stored at
         the address stored in <reg1> to the console.
-0x26: CORE_DUMP <reg1> <reg2>
+0x1C: CORE_DUMP <reg1> <reg2>
     Description:
         Write a number of values equal to the value
         stored in <reg2> starting at the address
@@ -172,9 +142,9 @@ Address Commands:
 
 Literal Commands:
 ----------------------------------------------------
-0x27: LOAD_LIT <number literal>
+0x1D: LOAD_LIT <number literal>
     Description:
         Loads <number literal> into $rs.
-0x28: JUMP_LIT <number literal>
+0x1E: JUMP_LIT <number literal>
     Description:
         Loads <number literal> into $pc.

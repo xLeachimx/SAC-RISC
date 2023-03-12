@@ -14,7 +14,7 @@ package com.hardware;
 import java.util.Arrays;
 
 public class RAM {
-    private static final int SIZE = 1 << 16;
+    private static final int SIZE = Short.MAX_VALUE;
     private byte[] data = null;
     private static RAM instance = null;
 

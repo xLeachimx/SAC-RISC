@@ -1,12 +1,13 @@
 SAC-RISC is a 16-bit VM with the following traits:
-1) 16 bit addressable RAM
-5) 16-bit word size
-2) 65,536 words of RAM
-3) Programs stored in RAM
-4) 16-bit integer-only arithmetic
-5) Two's compliment integers
-6) 24-bit (3 byte) instructions
-7) Single running program
+1) 16 bit addresses
+2) Byte-addressable RAM
+3) 32,767 bytes of RAM
+4) Programs stored in RAM
+5) 16-bit integer-only arithmetic
+6) Two's compliment integers
+7) 24-bit (3 byte) instructions
+8) Single running program
+9) 16-bit literals
 
 The SAC-RISC CPU has the following features:
 1) 16 general purpose registers
@@ -37,7 +38,8 @@ The SAC-RISC CPU has the following Commands:
 0) Special Commands:
     NOP,
     INPUT,
-    INPUT_CHAR
+    INPUT_CHAR,
+    HALT
 1) Register-Register:
     ADD,
     SUBT,
@@ -53,15 +55,7 @@ The SAC-RISC CPU has the following Commands:
     EQ,
     BRANCH,
     JUMP,
-    LOAD_RA,
-    LOAD_SP,
-    LOAD_PC,
-    LOAD_HP,
-    LOAD_RS,
-    STORE_RA,
-    STORE_SP,
-    STORE_HP,
-    STORE_RS,
+    COPY,
     OUTPUT,
     OUTPUT_CHAR,
     PUSH_STK,
@@ -69,15 +63,13 @@ The SAC-RISC CPU has the following Commands:
     SPLIT
 2) Address Commands:
     LOAD,
-    LOAD_L_BYTE,
-    LOAD_R_BYTE,
+    LOAD_BYTE,
     STORE,
-    STORE_L_BYTE,
-    STORE_R_BYTE,
+    STORE_BYTE,
     OUTPUT_STR,
     CORE_DUMP
 3) Literal Commands:
     LOAD_LIT,
     JUMP_LIT
-Total Commands: 41
+Total Commands: 31
 Command Descriptions in commands.txt
