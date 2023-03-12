@@ -31,12 +31,12 @@ import java.util.Arrays;
 
 public class HardDisk {
     //Basic Disk Constants
-    private static final long KB = 1024;
-    private static final long MB = 1024*KB;
+    public static final long KB = 1024;
+    public static final long MB = 1024*KB;
     private static final long DISK_SIZE = 10*MB;
 
     //Singleton variables
-    private static HardDisk instance;
+    private static HardDisk instance = null;
 
     //Instance variables
     private final String filename;
@@ -46,7 +46,7 @@ public class HardDisk {
     //==============================
     //  Singleton Methods
     //==============================
-    public HardDisk getInstance(String diskname){
+    public static HardDisk getInstance(String diskname){
         if(instance == null){
             instance = new HardDisk(diskname);
         }
@@ -57,7 +57,7 @@ public class HardDisk {
         return instance;
     }
 
-    public HardDisk getInstance(){
+    public static HardDisk getInstance(){
         if(instance == null){
             instance = new HardDisk("SAC-HD");
         }
@@ -175,6 +175,67 @@ public class HardDisk {
     }
 
     //Precond:
+    //  None.
+    //
+    //Postcond:
+    //  Returns an integer retrieved from the hard disk file.
+    //  Return null if the file is closed.
+    public Integer readInt(){
+        if(fio == null)return null;
+        Integer result = null;
+        try {
+            result = fio.readInt();
+        } catch(IOException exp){
+            System.out.println("Problem reading from hard disk.");
+            exp.printStackTrace();
+            System.exit(Interupts.HARDDISK_READ_ERROR.ordinal());
+        }
+        return result;
+    }
+
+    //Precond:
+    //  None.
+    //
+    //Postcond:
+    //  Returns a byte retrieved from the hard disk file.
+    //  Return null if the file is closed.
+    public Byte readByte(){
+        if(fio == null)return null;
+        Byte result = null;
+        try {
+            result = fio.readByte();
+        } catch(IOException exp){
+            System.out.println("Problem reading from hard disk.");
+            exp.printStackTrace();
+            System.exit(Interupts.HARDDISK_READ_ERROR.ordinal());
+        }
+        return result;
+    }
+
+    //Precond:
+    //  None.
+    //
+    //Postcond:
+    //  Returns a null terminated String retrieved from the hard disk file.
+    //  Return null if the file is closed.
+    public String readString(){
+        if(fio == null)return null;
+        StringBuilder result = new StringBuilder();
+        try {
+            char temp;
+            do{
+                temp = fio.readChar();
+                if(temp != 0)result.append(temp);
+            }while(temp != 0);
+        } catch(IOException exp){
+            System.out.println("Problem reading from hard disk.");
+            exp.printStackTrace();
+            System.exit(Interupts.HARDDISK_READ_ERROR.ordinal());
+        }
+        return result.toString();
+    }
+
+    //Precond:
     //  data is a byte array of data to be written to the file at the current file pointer.
     //
     //Postcond:
@@ -184,6 +245,60 @@ public class HardDisk {
         if(fio == null)return false;
         try {
             fio.write(data);
+        } catch(IOException exp){
+            System.out.println("Problem writing to hard disk.");
+            exp.printStackTrace();
+            System.exit(Interupts.HARDDISK_WRITE_ERROR.ordinal());
+        }
+        return true;
+    }
+
+    //Precond:
+    //  data is a byte of data to be written to the file at the current file pointer.
+    //
+    //Postcond:
+    //  Returns true if the byte's contents are written to the hard disk file.
+    //  Returns false if the file is closed.
+    public boolean write(byte data){
+        if(fio == null)return false;
+        try {
+            fio.writeByte(data);
+        } catch(IOException exp){
+            System.out.println("Problem writing to hard disk.");
+            exp.printStackTrace();
+            System.exit(Interupts.HARDDISK_WRITE_ERROR.ordinal());
+        }
+        return true;
+    }
+
+    //Precond:
+    //  data is an integer to be written to the file at the current file pointer.
+    //
+    //Postcond:
+    //  Returns true if the array's contents are written to the hard disk file.
+    //  Returns false if the file is closed.
+    public boolean write(int data){
+        if(fio == null)return false;
+        try {
+            fio.writeInt(data);
+        } catch(IOException exp){
+            System.out.println("Problem writing to hard disk.");
+            exp.printStackTrace();
+            System.exit(Interupts.HARDDISK_WRITE_ERROR.ordinal());
+        }
+        return true;
+    }
+
+    //Precond:
+    //  data is a long integer to be written to the file at the current file pointer.
+    //
+    //Postcond:
+    //  Returns true if the array's contents are written to the hard disk file.
+    //  Returns false if the file is closed.
+    public boolean write(long data){
+        if(fio == null)return false;
+        try {
+            fio.writeLong(data);
         } catch(IOException exp){
             System.out.println("Problem writing to hard disk.");
             exp.printStackTrace();

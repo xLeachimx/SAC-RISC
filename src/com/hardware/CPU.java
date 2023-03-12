@@ -34,9 +34,9 @@ public class CPU {
     //Member data
     private final short[] registers = new short[REGISTER_COUNT + 4];; //General purpose registers.
     private final byte ra = 16; //Return address register.
-    private final byte sp = 17; //Stack point register.
-    private final byte pc = 18; //Program counter register.
-    private final byte rs = 19; //Intermediate result register.
+    private final static byte sp = 17; //Stack point register.
+    private final static byte pc = 18; //Program counter register.
+    private final static byte rs = 19; //Intermediate result register.
     private boolean active;
     private final Scanner cin = new Scanner(System.in);
 
