@@ -37,6 +37,7 @@ public class Assembler {
     private ArrayList<String> str_literals;
     private HashMap<Integer, Integer> line_line_table;
     private HashMap<Integer, Integer> line_pc_table;
+    private HashSet<Integer> label_flag;
 
     //Class methods
     private Assembler(){
@@ -84,17 +85,33 @@ public class Assembler {
         }
         ArrayList<Integer> line_byte = new ArrayList<>();
         int total_bytes = 0;
-        for(int i = 0;i < result.size();i++){
+        for (ArrayList<Byte> bytes : result) {
             line_byte.add(total_bytes);
-            total_bytes += result.get(i).size();
+            total_bytes += bytes.size();
         }
         //Apply proper labels
         byte[] final_result = new byte[total_bytes];
         int ins_idx = 0;
         for(int i = 0;i < result.size();i++){
             //Make label changes
+            if(label_flag.contains(i)){
+                int literal = 0;
+                for(int j = 1;j <= 5;j++){
+                    literal += result.get(i).get(j);
+                    if(j < 5)literal = literal << 8;
+                }
+                literal = line_byte.get(literal);
+                for(int j = 5;j > 0;j--){
+                    byte ls_byte = (byte)(literal & 0xFF);
+                    result.get(i).set(j, ls_byte);
+                    literal = literal >> 8;
+                }
+            }
             //Shift to final byte array
-
+            for(int j = 0;j < result.get(i).size();j++){
+                final_result[ins_idx+j] = result.get(i).get(j);
+            }
+            ins_idx += result.get(i).size();
         }
         return final_result;
     }
@@ -151,6 +168,7 @@ public class Assembler {
                     String label = tokens.get(1);
                     if(label_table.containsKey(label)){
                         literal = label_table.get(label);
+                        label_flag.add(line_num);
                     }
                     else{
                         line_match = line_line_table.get(line_num);
