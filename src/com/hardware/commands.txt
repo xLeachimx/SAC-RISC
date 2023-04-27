@@ -148,3 +148,6 @@ Literal Commands:
 0x1E: JUMP_LIT <number literal>
     Description:
         Loads <number literal> into $pc.
+0x1F: LOAD_STR <string literal>
+    Description:
+        Loads the address of the literal into $rs.

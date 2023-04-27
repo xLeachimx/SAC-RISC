@@ -207,8 +207,8 @@ public class CPU {
                     else System.out.print(" ");
                 }
             }
-            case 0x1D -> {
-                //LOAD_LIT
+            case 0x1D, 0x1F -> {
+                //LOAD_LIT, LOAD_STR
                 registers[rs] = literal;
             }
             case 0x1E -> {
