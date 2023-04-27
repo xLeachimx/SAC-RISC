@@ -3,7 +3,7 @@
  * Created On: 09 Feb 2023
  * Licence: GNU GPLv3
  * Purpose:
- *  A simulated 16-bit (address) CPU, with 24 bit commands.
+ *  A simulated 32-bit CPU, with variable length commands.
  */
 
 
@@ -15,10 +15,7 @@ import java.util.Scanner;
 public class CPU {
     //Constants
     private static final int REGISTER_COUNT = 16;
-    private static final byte ms_nibble = (byte)0xF0;
-    private static final byte ls_nibble = (byte)0x0F;
-    private static final short ls_byte = (short)0x00FF;
-    private static final short ms_byte = (short)0xFF00;
+    private static final int ls_byte = 0xFF;
 
     //Singleton Setup
     private static CPU instance = null;
@@ -32,7 +29,7 @@ public class CPU {
     }
 
     //Member data
-    private final short[] registers = new short[REGISTER_COUNT + 4];; //General purpose registers.
+    private final int[] registers = new int[REGISTER_COUNT + 4];; //General purpose registers.
     private final byte ra = 16; //Return address register.
     private final static byte sp = 17; //Stack point register.
     private final static byte pc = 18; //Program counter register.
@@ -43,213 +40,225 @@ public class CPU {
     //Member methods
     //Constructor
     private CPU(){
-        Arrays.fill(registers, (short)0);
+        Arrays.fill(registers, 0);
         active = false;
     }
 
-    /*  Precond:
-     *      cmd is a valid byte array with 3 bytes containing a valid command.
+    /* Precond:
+     *  None.
      *
-     *  Postcond:
-     *      Execture the given command updating the virtual machine.
-    */
-    public void step(){
-        //Fetch
-        byte[] cmd = new byte[3];
-        cmd[0] = RAM.getInstance().load(registers[pc]);
-        cmd[1] = RAM.getInstance().load(registers[pc]+1);
-        cmd[2] = RAM.getInstance().load(registers[pc]+2);
-        //Decode
-        //Extract possible arguments
-        byte cmd_code = cmd[0];
-        byte[] reg = reg_split(cmd[1], cmd[2]);
-        short literal = literal_comb(cmd[1], cmd[2]);
-        //Execute
-        switch(cmd_code){
-            case 0x01 ->{
-                //INPUT
-                registers[rs] = cin.nextShort();
-                cin.skip("\n");
-            }
-            case 0x02 -> {
-                //INPUT_CHAR
-                registers[rs] = (short)cin.nextLine().charAt(0);
-            }
-            case 0x03 -> {
-                //ADD
-                registers[reg[2]] = (short)(registers[reg[0]] + registers[reg[1]]);
-            }
-            case 0x04 -> {
-                //SUBT
-                registers[reg[2]] = (short)(registers[reg[0]] - registers[reg[1]]);
-            }
-            case 0x05 -> {
-                //MULT
-                registers[reg[2]] = (short)(registers[reg[0]] * registers[reg[1]]);
-            }
-            case 0x06 -> {
-                //DIV
-                registers[reg[2]] = (short)(registers[reg[0]] / registers[reg[1]]);
-            }
-            case 0x07 -> {
-                //NEG
-                registers[reg[1]] = (short)(~registers[reg[0]]);
-            }
-            case 0x08 -> {
-                //AND
-                registers[reg[2]] = (short)(registers[reg[0]] & registers[reg[1]]);
-            }
-            case 0x09 -> {
-                //OR
-                registers[reg[2]] = (short)(registers[reg[0]] | registers[reg[1]]);
-            }
-            case 0x0A -> {
-                //LSHIFT
-                registers[reg[1]] = (short)(registers[reg[0]] << 1);
-            }
-            case 0x0B -> {
-                //RSHIFT
-                registers[reg[1]] = (short)(registers[reg[0]] >> 1);
-            }
-            case 0x0C -> {
-                //GT
-                registers[reg[2]] = (short)((registers[reg[0]] > registers[reg[1]]) ? 1 : 0);
-            }
-            case 0x0D -> {
-                //LT
-                registers[reg[2]] = (short)((registers[reg[0]] < registers[reg[1]]) ? 1 : 0);
-            }
-            case 0x0E -> {
-                //EQ
-                registers[reg[2]] = (short)((registers[reg[0]] == registers[reg[1]]) ? 1 : 0);
-            }
-            case 0x0F -> {
-                //BRANCH
-                registers[pc] = registers[reg[0]] != 0 ? registers[reg[1]] : registers[pc];
-            }
+     * Postcond:
+     *  Fetches the command and all required information for executing it.
+     */
+    public void fetch_decode(){
+        byte cmd = RAM.getInstance().load_byte(registers[pc]);
+        byte reg1, reg2, reg3;
+        int literal;
+        switch(cmd){
+            //No argument commands
+            case 0x00, 0x01, 0x02, (byte)0xFF:
+                execute_no_params(cmd);
+                break;
+            //Single register commands
+            case 0x10, 0x12, 0x13, 0x14, 0x15, 0x1B:
+                reg1 = RAM.getInstance().load_byte(registers[pc]+1);
+                execute_one_register(cmd, reg1);
+                break;
+            //Double register commands
+            case 0x07, 0x0A, 0x0B, 0x0F, 0x11, 0x17, 0x18, 0x19, 0x1A, 0x1C:
+                reg1 = RAM.getInstance().load_byte(registers[pc]+1);
+                reg2 = RAM.getInstance().load_byte(registers[pc]+2);
+                execute_two_register(cmd, reg1, reg2);
+                break;
+            //Triple register commands
+            case 0x03, 0x04, 0x05, 0x06, 0x08, 0x09, 0x0C, 0x0D, 0x0E:
+                reg1 = RAM.getInstance().load_byte(registers[pc]+1);
+                reg2 = RAM.getInstance().load_byte(registers[pc]+2);
+                reg3 = RAM.getInstance().load_byte(registers[pc]+2);
+                execute_three_register(cmd, reg1, reg2, reg3);
+                break;
+            //Number literal commands
+            case 0x1D, 0x1E:
+                literal = RAM.getInstance().load_word(registers[pc]+1);
+                execute_number_literal(cmd, literal);
+                break;
+            //String literal commands
+            case 0x1F:
+                //Handled by the assembler
+                break;
+            default:
+                System.exit(100);
+                
+        }
+    }
+
+    /* Precond:
+     *  cmd is a valid command code for the cpu which takes no arguments.
+     *
+     * Postcond:
+     *  Executes the given commands and forwards the pc by one byte.
+     */
+    public void execute_no_params(byte cmd){
+        if(cmd == (byte)0xFF)active = false;
+        registers[pc] += 1;
+        if(cmd == 0x01)registers[rs] = cin.nextInt();
+        else if(cmd == 0x02)registers[rs] = cin.nextLine().trim().charAt(0);
+    }
+
+    /* Precond:
+     *  cmd is a valid command code for the cpu which takes one register argument.
+     *  reg is a int value indicating the index of the register to use.
+     *
+     * Postcond:
+     *  Executes the given commands and forwards the pc by two byte.
+     */
+    public void execute_one_register(byte cmd, byte reg){
+        if(reg < 0 || reg >= registers.length)System.exit(101);
+        registers[pc] += 2;
+        switch(cmd){
             case 0x10 -> {
-                //JUMP
-                registers[pc] = registers[reg[0]];
-            }
-            case 0x11 ->{
-                //COPY
-                registers[reg[0]] = registers[reg[1]];
+                registers[pc] = registers[reg];
             }
             case 0x12 -> {
-                //OUTPUT
-                System.out.println(registers[reg[0]]);
+                System.out.println(registers[reg]);
             }
             case 0x13 -> {
-                //OUTPUT_CHAR
-                char c = (char)(ls_byte & registers[reg[0]]);
-                System.out.println(c);
+                System.out.println((char)registers[reg]);
             }
             case 0x14 -> {
-                //PUSH_STK
-                byte l_byte = (byte)((registers[reg[0]] & ms_byte) >> 4);
-                byte r_byte = (byte)(registers[reg[0]] & ls_byte);
-                RAM.getInstance().store(registers[sp], l_byte);
-                RAM.getInstance().store(registers[sp]+1, r_byte);
-                registers[sp] += 2;
+                RAM.getInstance().store_word(registers[sp], registers[reg]);
+                registers[sp] += RAM.WORD_SIZE;
             }
             case 0x15 -> {
-                //POP_STK
-                registers[sp] -= 2;
-                byte l_byte = RAM.getInstance().load(registers[sp]);
-                byte r_byte = RAM.getInstance().load(registers[sp]+1);
-                registers[reg[0]] = literal_comb(l_byte, r_byte);
-            }
-            case 0x16 -> {
-                //SPLIT
-                byte l_byte = (byte)((registers[reg[0]] & ms_byte) >> 4);
-                byte r_byte = (byte)(registers[reg[0]] & ls_byte);
-                registers[reg[1]] = l_byte;
-                registers[reg[2]] = r_byte;
-            }
-            case 0x17 -> {
-                //LOAD
-                byte l_byte = RAM.getInstance().load(registers[reg[0]]);
-                byte r_byte = RAM.getInstance().load(registers[reg[0]]+1);
-                registers[reg[1]] = literal_comb(l_byte, r_byte);
-            }
-            case 0x18 -> {
-                //LOAD_BYTE
-                registers[reg[1]] = RAM.getInstance().load(registers[reg[0]]);
-            }
-            case 0x19 -> {
-                //STORE
-                byte l_byte = (byte)((registers[reg[0]] & ms_byte) >> 4);
-                byte r_byte = (byte)(registers[reg[0]] & ls_byte);
-                RAM.getInstance().store(registers[reg[0]], l_byte);
-                RAM.getInstance().store(registers[reg[0]]+1, r_byte);
-            }
-            case 0x1A -> {
-                //STORE BYTE
-                byte r_byte = (byte)(registers[reg[0]] & ls_byte);
-                RAM.getInstance().store(registers[reg[0]], r_byte);
+                registers[sp] -= RAM.WORD_SIZE;
+                int temp = RAM.getInstance().load_word(registers[sp]);
+                registers[reg] = temp;
             }
             case 0x1B -> {
-                //OUTPUT_STR
-                short addr = registers[reg[0]];
-                while(RAM.getInstance().load(addr) != 0){
-                    System.out.print((char)RAM.getInstance().load(addr));
-                    addr += 1;
+                StringBuilder str = new StringBuilder();
+                RAM ram = RAM.getInstance();
+                int addr = registers[reg];
+                while(ram.load_word(addr) != 0){
+                    str.append((char)ram.load_word(addr));
+                    addr += RAM.WORD_SIZE;
                 }
-                System.out.println();
-            }
-            case 0x1C -> {
-                //CORE_DUMP
-                short addr = registers[reg[0]];
-                for(int i = 0;i < registers[reg[1]];i++){
-                    byte val = RAM.getInstance().load(addr+i);
-                    System.out.print(val);
-                    if(i % 8 == 0)System.out.println();
-                    else System.out.print(" ");
-                }
-            }
-            case 0x1D, 0x1F -> {
-                //LOAD_LIT, LOAD_STR
-                registers[rs] = literal;
-            }
-            case 0x1E -> {
-                //JUMP_LIT
-                registers[pc] = literal;
-            }
-            case (byte)0xFF -> {
-                //HALT
-                active = false;
+                System.out.println(str.toString());
             }
         }
+    }
+
+    /* Precond:
+     *  cmd is a valid command code for the cpu which takes two register argument.
+     *  reg2 is a byte value indicating the index of the register to use.
+     *  reg2 is a byte value indicating the index of the register to use.
+     *
+     * Postcond:
+     *  Executes the given commands and forwards the pc by three byte.
+     * 0x07, 0x0A, 0x0B, 0x0F, 0x11, 0x17, 0x18, 0x19, 0x1A, 0x1C
+     */
+    public void execute_two_register(byte cmd, byte reg1, byte reg2){
+        if(reg1 < 0 || reg1 >= registers.length)System.exit(101);
+        if(reg2 < 0 || reg2 >= registers.length)System.exit(101);
         registers[pc] += 3;
+        switch(cmd){
+            case 0x07 -> {
+                registers[reg2] = ~registers[reg1];
+            }
+            case 0x0A -> {
+                registers[reg2] = registers[reg1] << 1;
+            }
+            case 0x0B -> {
+                registers[reg2] = registers[reg1] >> 1;
+            }
+            case 0x0F -> {
+                if(registers[reg1] != 0)registers[pc] = registers[reg2];
+            }
+            case 0x11 -> {
+                registers[reg2] = registers[reg1];
+            }
+            case 0x17 -> {
+                registers[reg2] = RAM.getInstance().load_word(registers[reg1]);
+            }
+            case 0x18 -> {
+                registers[reg2] = RAM.getInstance().load_byte(registers[reg1]);
+            }
+            case 0x19 -> {
+                RAM.getInstance().store_word(registers[reg1], registers[reg2]);
+            }
+            case 0x1A -> {
+                byte stored = (byte)(registers[reg2] & ls_byte);
+                RAM.getInstance().store_byte(registers[reg1], stored);
+            }
+            case 0x1C -> {
+                int addr = registers[reg1];
+                for(int offset = 0; offset < registers[reg2];offset++){
+                    System.out.printf("%X ", RAM.getInstance().load_byte(addr+offset));
+                    if((offset % 10) == 0)System.out.println();
+                }
+            }
+        }
     }
 
-    /*  Precond:
-     *      first is a valid byte containing up to two register indices.
-     *      second is a valid byte containing one register index in it
-     *          most significant nibble.
+    /* Precond:
+     *  cmd is a valid command code for the cpu which takes three register argument.
+     *  reg2 is a byte value indicating the index of the register to use.
+     *  reg2 is a byte value indicating the index of the register to use.
+     *  reg3 is a byte value indicating the index of the register to use.
      *
-     *  Postcond:
-     *      Returns a byte array containing 3 elements each a register number.
+     * Postcond:
+     *  Executes the given commands and forwards the pc by four bytes.
      */
-    private byte[] reg_split(byte first, byte second){
-        byte[] regs = new byte[3];
-        regs[0] = (byte)((first & ms_nibble) >> 4);
-        regs[1] = (byte)((first & ls_nibble));
-        regs[2] = (byte)((second & ms_nibble) >> 4);
-        return regs;
+    public void execute_three_register(byte cmd, byte reg1, byte reg2, byte reg3){
+        if(reg1 < 0 || reg1 >= registers.length)System.exit(101);
+        if(reg2 < 0 || reg2 >= registers.length)System.exit(101);
+        if(reg3 < 0 || reg3 >= registers.length)System.exit(101);
+        registers[pc] += 4;
+        switch(cmd){
+            case 0x03 -> {
+                registers[reg3] = registers[reg1] + registers[reg2];
+            }
+            case 0x04 -> {
+                registers[reg3] = registers[reg1] - registers[reg2];
+            }
+            case 0x05 -> {
+                registers[reg3] = registers[reg1] * registers[reg2];
+            }
+            case 0x06 -> {
+                registers[reg3] = registers[reg1] / registers[reg2];
+            }
+            case 0x08 -> {
+                registers[reg3] = registers[reg1] & registers[reg2];
+            }
+            case 0x09 -> {
+                registers[reg3] = registers[reg1] | registers[reg2];
+            }
+            case 0x0C -> {
+                registers[reg3] = (registers[reg1] > registers[reg2]) ? 1 : 0;
+            }
+            case 0x0D -> {
+                registers[reg3] = (registers[reg1] < registers[reg2]) ? 1 : 0;
+            }
+            case 0x0E -> {
+                registers[reg3] = (registers[reg1] == registers[reg2]) ? 1 : 0;
+            }
+        }
     }
 
-    /*  Precond:
-     *      first is a valid byte containing the most significant 8-bits of a
-     *          16-bit integer.
-     *      second is a valid byte containing the least significant 8-bits of a
-     *          16-bit integer.
+    /* Precond:
+     *  cmd is a valid command code for the cpu which takes one number literal argument.
+     *  lit is the literal argument to the command.
      *
-     *  Postcond:
-     *      Combines the byte together into a single 16-bit integer.
+     * Postcond:
+     *  Executes the given commands and forwards the pc by five bytes.
      */
-    private short literal_comb(byte first, byte second){
-        return (short)((first << 8) + second);
+    public void execute_number_literal(byte cmd, int lit){
+        switch(cmd){
+            case 0x1D -> {
+                registers[rs] = lit;
+            }
+            case 0x1E -> {
+                registers[pc] = lit;
+            }
+        }
     }
-
 }

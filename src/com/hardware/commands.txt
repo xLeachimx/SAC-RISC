@@ -9,7 +9,7 @@ Special Commands:
         A null operation.
 0x01: INPUT
     Description:
-        Request a 16-bit integer from the console.
+        Request a 32-bit integer from the console.
         Stores the value in $rs.
 0x02: INPUT_CHAR
     Description:
@@ -85,7 +85,7 @@ Register-Register Commands:
         is non-zero.
 0x10: JUMP <reg1>
     Description:
-        Loads the value in <reg1> into $pc.
+       Loads the value in <reg1> into $pc.
 0x11: COPY <reg1> <reg2>
     Description:
         Copies the value in <reg1> into the value in <reg2>.
@@ -96,26 +96,21 @@ Register-Register Commands:
 0x13: OUTPUT_CHAR <reg1>
     Description:
         Writes the character value stored in <reg1>
-        to the console. (Only the least sig byte will
+        to the console. (Only the least sig bytes will
         be converted.)
 0x14: PUSH_STK <reg1>
     Description:
         Pushes the value in <reg1> onto the stack.
 0x15: POP_STK <reg1>
     Description:
-        Pops the 16-bit value on top of stack and
+        Pops the 32-bit value on top of stack and
         stores it in <reg1>.
-0x16: SPLIT <reg1> <reg2> <reg3>
-    Description:
-       Splits the 16-bit value in <reg1> into two
-       bytes and stores the most sig byte in <reg2>
-       and the least sig byte in <reg3>
 
 Address Commands:
 ---------------------------------------------------
 0x17: LOAD <reg1> <reg2>
     Description:
-        Load the 16-bit value at the address stored
+        Load the 32-bit value at the address stored
         in <reg1> into <reg2>.
 0x18: LOAD_BYTE <reg1> <reg2>
     Description:
@@ -123,7 +118,7 @@ Address Commands:
         in <reg1> into <reg2>.
 0x19: STORE <reg1> <reg2>
     Description:
-        Store the 16-bit value in <reg2> at the
+        Store the 32-bit value in <reg2> at the
         address stored in <reg1>.
 0x1A: STORE_BYTE <reg1> <reg2>
     Description:
@@ -148,6 +143,3 @@ Literal Commands:
 0x1E: JUMP_LIT <number literal>
     Description:
         Loads <number literal> into $pc.
-0x1F: LOAD_STR <string literal>
-    Description:
-        Loads the address of the literal into $rs.
