@@ -19,21 +19,21 @@ public class CPU {
 
     //Singleton Setup
     private static CPU instance = null;
-    public CPU get_instance(){
+    public static CPU get_instance(){
         if(instance == null)instance = new CPU();
         return instance;
     }
 
-    public void destroy_instance(){
+    public static void destroy_instance(){
         instance = null;
     }
 
     //Member data
     private final int[] registers = new int[REGISTER_COUNT + 4];; //General purpose registers.
-    private final byte ra = 16; //Return address register.
-    private final static byte sp = 17; //Stack point register.
-    private final static byte pc = 18; //Program counter register.
-    private final static byte rs = 19; //Intermediate result register.
+    public final byte ra = 16; //Return address register.
+    public final static byte sp = 17; //Stack point register.
+    public final static byte pc = 18; //Program counter register.
+    public final static byte rs = 19; //Intermediate result register.
     private boolean active;
     private final Scanner cin = new Scanner(System.in);
 
@@ -42,6 +42,25 @@ public class CPU {
     private CPU(){
         Arrays.fill(registers, 0);
         active = false;
+    }
+
+    //Testing, debug, and OS methods
+    public boolean check_register(byte reg, int value){
+        return registers[reg] == value;
+    }
+
+    public boolean is_active(){
+        return active;
+    }
+
+    public void set_active(boolean value){
+        active = value;
+    }
+    public int[] getRegisters(){
+        return registers;
+    }
+    public void setRegister(byte reg, int value){
+        registers[reg] = value;
     }
 
     /* Precond:
@@ -139,8 +158,8 @@ public class CPU {
                 RAM ram = RAM.getInstance();
                 int addr = registers[reg];
                 while(ram.load_word(addr) != 0){
-                    str.append((char)ram.load_word(addr));
-                    addr += RAM.WORD_SIZE;
+                    str.append((char)ram.load_char(addr));
+                    addr += RAM.HWORD_SIZE;
                 }
                 System.out.println(str.toString());
             }
