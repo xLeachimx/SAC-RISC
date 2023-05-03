@@ -80,7 +80,7 @@ public class RAM {
         for(int i = 0;i < value.length();i++){
             store_char(addr+(HWORD_SIZE*i), value.charAt(i));
         }
-        store_char(addr+value.length(), (char)0);
+        store_char(addr+2*value.length(), (char)0);
     }
 
     public void store_word(int addr, int value){

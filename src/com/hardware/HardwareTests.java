@@ -135,7 +135,7 @@ public class HardwareTests {
         //OUTPUT_STR
         ram.store_string(10, "Hello, World!");
         cpu.setRegister((byte)2, 10);
-        cpu.execute_one_register((byte)0x18, (byte)2);
+        cpu.execute_one_register((byte)0x1B, (byte)2);
         System.out.flush();
         if(!redirected_out.hasNextLine()){
             System.err.println("ERROR STRING NOT PROPERLY PRINTED.");
@@ -150,6 +150,106 @@ public class HardwareTests {
             }
         }
         //Two register commands
+        //NEG
+        cpu.setRegister(CPU.pc, 0);
+        cpu.setRegister((byte) 0, 10);
+        cpu.execute_two_register((byte) 0x07, (byte) 0, (byte) 1);
+        if(!cpu.check_register(CPU.pc, 3)){
+            System.err.println("ERROR TWO ARGUMENT COMMANDS DO NOT PROPERLY ADVANCE THE PC.");
+            passed = false;
+        }
+        if(!cpu.check_register((byte) 1, ~10)){
+            System.err.println("NEGATION NO PERFORMED CORRECTLY.");
+            System.err.printf("EXPECTED: %d\n", (~10));
+            System.err.printf("GOT: %d\n", cpu.getRegisters()[1]);
+            passed = false;
+        }
+        //LSHIFT
+        cpu.setRegister((byte) 0, 10);
+        cpu.execute_two_register((byte) 0x0A, (byte) 0, (byte) 1);
+        if(!cpu.check_register((byte) 1, 20)){
+            System.err.println("LEFT SHIFT NOT PERFORMED CORRECTLY.");
+            System.err.printf("EXPECTED: %d\n", 20);
+            System.err.printf("GOT: %d\n", cpu.getRegisters()[1]);
+            passed = false;
+        }
+        //RSHIFT
+        cpu.setRegister((byte) 0, 10);
+        cpu.execute_two_register((byte) 0x0B, (byte) 0, (byte) 1);
+        if(!cpu.check_register((byte) 1, 5)) {
+            System.err.println("RIGHT SHIFT NOT PERFORMED CORRECTLY.");
+            System.err.printf("EXPECTED: %d\n", 5);
+            System.err.printf("GOT: %d\n", cpu.getRegisters()[1]);
+            passed = false;
+        }
+        //BRANCH
+        cpu.setRegister((byte) 0, 0);
+        cpu.setRegister((byte) 1, 1);
+        cpu.setRegister((byte) 3, 342);
+        cpu.setRegister(CPU.pc, 0);
+        cpu.execute_two_register((byte)0x0F, (byte) 0, (byte) 3);
+        if(!cpu.check_register(CPU.pc, 3)){
+            System.err.println("BRANCH DOES NOT WORK ON FALSE.");
+            System.err.printf("Expected: %d\n", 3);
+            System.err.printf("Got: %d\n", cpu.getRegisters()[CPU.pc]);
+            passed = false;
+        }
+        cpu.execute_two_register((byte)0x0F, (byte) 1, (byte) 3);
+        if(!cpu.check_register(CPU.pc, 342)){
+            System.err.println("BRANCH DOES NOT WORK ON TRUE.");
+            System.err.printf("Expected: %d\n", 342);
+            System.err.printf("Got: %d\n", cpu.getRegisters()[CPU.pc]);
+            passed = false;
+        }
+        //COPY
+        cpu.setRegister((byte) 0, 100);
+        cpu.setRegister((byte) 1, 0);
+        cpu.execute_two_register((byte)0x11, (byte) 0, (byte) 1);
+        if(!cpu.check_register((byte) 1, 100)){
+            System.err.println("lCOPY DOES NOT WORK.");
+            System.err.printf("Expected: %d\n", 100);
+            System.err.printf("Got: %d\n", cpu.getRegisters()[1]);
+        }
+        //LOAD
+        ram.store_word(0, 238);
+        cpu.setRegister((byte) 4, 0);
+        cpu.execute_two_register((byte)0x17, (byte) 4, (byte) 5);
+        if(!cpu.check_register((byte) 5, 238)){
+            System.err.println("LOAD NOT WORKING.");
+            System.err.printf("Expected: %d\n", 238);
+            System.err.printf("Got: %d\n", cpu.getRegisters()[5]);
+        }
+        //LOAD_BYTE
+        ram.store_word(0, 257);
+        cpu.setRegister((byte) 4, 3);
+        cpu.execute_two_register((byte)0x18, (byte) 4, (byte) 5);
+        if(!cpu.check_register((byte) 5, 1)){
+            System.err.println("LOAD_BYTE NOT WORKING.");
+            System.err.printf("Expected: %d\n", 1);
+            System.err.printf("Got: %d\n", cpu.getRegisters()[5]);
+        }
+        //STORE
+        ram.store_word(0, 11111221);
+        cpu.setRegister((byte) 0, 0);
+        cpu.setRegister((byte) 1, 4505);
+        cpu.execute_two_register((byte)0x19, (byte) 0, (byte) 1);
+        if(ram.load_word(0) != 4505){
+            System.err.println("ERROR WITH STORE.");
+            System.err.printf("Expected: %d\n", 4505);
+            System.err.printf("Got: %d\n", ram.load_word(0));
+        }
+        //STORE_BYTE
+        ram.store_word(0, 11111221);
+        cpu.setRegister((byte) 0, 0);
+        cpu.setRegister((byte) 1, 257);
+        cpu.execute_two_register((byte)0x1A, (byte) 0, (byte) 1);
+        if(ram.load_byte(0) != 1){
+            System.err.println("ERROR WITH STORE_BYTE.");
+            System.err.printf("Expected: %d\n", 1);
+            System.err.printf("Got: %d\n", ram.load_byte(0));
+        }
+        //CORE DUMP IGNORED
+        //Triple Register Commands
         return passed;
     }
 }

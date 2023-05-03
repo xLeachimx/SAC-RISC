@@ -143,3 +143,7 @@ Literal Commands:
 0x1E: JUMP_LIT <number literal>
     Description:
         Loads <number literal> into $pc.
+0x1F: BRANCH_LIT <reg> <number literal>
+    Description:
+        Loads <number literal> into $pc if the value in
+        <reg> is non-zero.

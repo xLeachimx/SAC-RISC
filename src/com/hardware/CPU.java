@@ -103,7 +103,6 @@ public class CPU {
                 break;
             //String literal commands
             case 0x1F:
-                //Handled by the assembler
                 break;
             default:
                 System.exit(100);
@@ -277,6 +276,22 @@ public class CPU {
             }
             case 0x1E -> {
                 registers[pc] = lit;
+            }
+        }
+    }
+
+    /* Precond:
+     *  cmd is a valid command code for the cpu which takes one number literal argument.
+     *  reg is the register containing required information.
+     *  lit is the literal argument to the command.
+     *
+     * Postcond:
+     *  Executes the given commands and forwards the pc by five bytes.
+     */
+    public void execute_register_literal(byte cmd, byte reg, int lit){
+        switch(cmd){
+            case 0x1F -> {
+                if(registers[reg] != 0)registers[pc] = lit;
             }
         }
     }

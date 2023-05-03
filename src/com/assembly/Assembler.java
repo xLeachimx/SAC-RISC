@@ -181,8 +181,29 @@ public class Assembler {
                     literal = literal >> 8;
                 }
                 break;
-            //String literal commands
+            //Register literal commands
             case 0x1F:
+                result.add(cmd);
+                result.add(parse_register(tokens.get(1)));
+                //Deal with labels
+                try{
+                    literal = Integer.parseInt(tokens.get(2));
+                } catch (NumberFormatException exp){
+                    String label = tokens.get(2);
+                    if(label_table.containsKey(label)){
+                        literal = label_table.get(label);
+                        label_flag.add(line_num);
+                    }
+                    else{
+                        line_match = line_line_table.get(line_num);
+                        throw new AssemblyUnknownArgumentException("UNKNOWN LABEL: " + label, line_match);
+                    }
+                }
+                for(int j = 0;j < 4;j++){
+                    byte ls_byte = (byte)(literal & 0xFF);
+                    result.add(ls_byte);
+                    literal = literal >> 8;
+                }
                 break;
         }
         return result;

@@ -42,7 +42,7 @@ public enum CommandList {
     CAORE_DUMP(0x1C),
     LOAD_LIT(0x1D),
     JUMP_LIT(0x1E),
-    LOAD_STR(0x1F);
+    BRANCH_LIT(0x1F);
 
     public final byte val;
 
