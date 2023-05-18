@@ -17,12 +17,16 @@ public class HardwareTests {
     private static PipedInputStream in_pipe;
     private static PipedOutputStream out_pipe;
     public static void main(String[] args) throws IOException {
+        PrintStream temp = System.out;
         out_pipe = new PipedOutputStream();
         in_pipe = new PipedInputStream(out_pipe);
         redirected_out = new Scanner(in_pipe);
         System.setOut(new PrintStream(out_pipe));
         boolean RAM_status = RAM_test();
         boolean CPU_status = CPU_test();
+        System.setOut(temp);
+        if(RAM_status)System.out.println("RAM tests passed.");
+        if(CPU_status)System.out.println("CPU tests passed.");
     }
 
     public static boolean RAM_test(){
@@ -209,6 +213,7 @@ public class HardwareTests {
             System.err.println("lCOPY DOES NOT WORK.");
             System.err.printf("Expected: %d\n", 100);
             System.err.printf("Got: %d\n", cpu.getRegisters()[1]);
+            passed = false;
         }
         //LOAD
         ram.store_word(0, 238);
@@ -218,6 +223,7 @@ public class HardwareTests {
             System.err.println("LOAD NOT WORKING.");
             System.err.printf("Expected: %d\n", 238);
             System.err.printf("Got: %d\n", cpu.getRegisters()[5]);
+            passed = false;
         }
         //LOAD_BYTE
         ram.store_word(0, 257);
@@ -227,6 +233,7 @@ public class HardwareTests {
             System.err.println("LOAD_BYTE NOT WORKING.");
             System.err.printf("Expected: %d\n", 1);
             System.err.printf("Got: %d\n", cpu.getRegisters()[5]);
+            passed = false;
         }
         //STORE
         ram.store_word(0, 11111221);
@@ -237,6 +244,7 @@ public class HardwareTests {
             System.err.println("ERROR WITH STORE.");
             System.err.printf("Expected: %d\n", 4505);
             System.err.printf("Got: %d\n", ram.load_word(0));
+            passed = false;
         }
         //STORE_BYTE
         ram.store_word(0, 11111221);
@@ -247,6 +255,7 @@ public class HardwareTests {
             System.err.println("ERROR WITH STORE_BYTE.");
             System.err.printf("Expected: %d\n", 1);
             System.err.printf("Got: %d\n", ram.load_byte(0));
+            passed = false;
         }
         //CORE DUMP IGNORED
         //Triple Register Commands
