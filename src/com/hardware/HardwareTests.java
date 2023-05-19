@@ -10,13 +10,18 @@
 package com.hardware;
 
 import java.io.*;
+import java.util.Random;
 import java.util.Scanner;
 
 public class HardwareTests {
+    private static final Random rng = new Random();
     private static Scanner redirected_out;
     private static PipedInputStream in_pipe;
     private static PipedOutputStream out_pipe;
     public static void main(String[] args) throws IOException {
+        long seed = rng.nextLong();
+        System.out.printf("Seed: %d\n", seed);
+        rng.setSeed(seed);
         PrintStream temp = System.out;
         out_pipe = new PipedOutputStream();
         in_pipe = new PipedInputStream(out_pipe);
@@ -259,6 +264,158 @@ public class HardwareTests {
         }
         //CORE DUMP IGNORED
         //Triple Register Commands
+        int math_arg_a = rng.nextInt(50);
+        int math_arg_b = rng.nextInt(50);
+        int result = 0;
+        //ADD
+        cpu.setRegister((byte)0, math_arg_a);
+        cpu.setRegister((byte)1, math_arg_b);
+        result = math_arg_a + math_arg_b;
+        cpu.setRegister((byte)2, 0);
+        cpu.execute_three_register((byte)0x03, (byte) 0, (byte)1, (byte)2);
+        if(!cpu.check_register((byte)2, result)){
+            System.err.println("ERROR WITH ADD.");
+            System.err.printf("Expected: %d\n", result);
+            System.err.printf("Got: %d\n", cpu.getRegisters()[2]);
+            passed = false;
+        }
+        //SUB
+        cpu.setRegister((byte)0, math_arg_a);
+        cpu.setRegister((byte)1, math_arg_b);
+        result = math_arg_a - math_arg_b;
+        cpu.setRegister((byte)2, 0);
+        cpu.execute_three_register((byte)0x04, (byte) 0, (byte)1, (byte)2);
+        if(!cpu.check_register((byte)2, result)){
+            System.err.println("ERROR WITH SUB.");
+            System.err.printf("Expected: %d\n", result);
+            System.err.printf("Got: %d\n", cpu.getRegisters()[2]);
+            passed = false;
+        }
+        //MULT
+        cpu.setRegister((byte)0, math_arg_a);
+        cpu.setRegister((byte)1, math_arg_b);
+        result = math_arg_a * math_arg_b;
+        cpu.setRegister((byte)2, 0);
+        cpu.execute_three_register((byte)0x05, (byte) 0, (byte)1, (byte)2);
+        if(!cpu.check_register((byte)2, result)){
+            System.err.println("ERROR WITH MULT.");
+            System.err.printf("Expected: %d\n", result);
+            System.err.printf("Got: %d\n", cpu.getRegisters()[2]);
+            passed = false;
+        }
+        //DIV
+        while(math_arg_b == 0)math_arg_b = rng.nextInt();
+        cpu.setRegister((byte)0, math_arg_a);
+        cpu.setRegister((byte)1, math_arg_b);
+        result = math_arg_a / math_arg_b;
+        cpu.setRegister((byte)2, 0);
+        cpu.execute_three_register((byte)0x06, (byte) 0, (byte)1, (byte)2);
+        if(!cpu.check_register((byte)2, result)){
+            System.err.println("ERROR WITH DIV.");
+            System.err.printf("Expected: %d\n", result);
+            System.err.printf("Got: %d\n", cpu.getRegisters()[2]);
+            passed = false;
+        }
+        //AND
+        cpu.setRegister((byte)0, math_arg_a);
+        cpu.setRegister((byte)1, math_arg_b);
+        result = math_arg_a & math_arg_b;
+        cpu.setRegister((byte)2, 0);
+        cpu.execute_three_register((byte)0x08, (byte) 0, (byte)1, (byte)2);
+        if(!cpu.check_register((byte)2, result)){
+            System.err.println("ERROR WITH AND.");
+            System.err.printf("Expected: %d\n", result);
+            System.err.printf("Got: %d\n", cpu.getRegisters()[2]);
+            passed = false;
+        }
+        //OR
+        cpu.setRegister((byte)0, math_arg_a);
+        cpu.setRegister((byte)1, math_arg_b);
+        result = math_arg_a | math_arg_b;
+        cpu.setRegister((byte)2, 0);
+        cpu.execute_three_register((byte)0x09, (byte) 0, (byte)1, (byte)2);
+        if(!cpu.check_register((byte)2, result)){
+            System.err.println("ERROR WITH OR.");
+            System.err.printf("Expected: %d\n", result);
+            System.err.printf("Got: %d\n", cpu.getRegisters()[2]);
+            passed = false;
+        }
+        //GT
+        cpu.setRegister((byte)0, math_arg_a);
+        cpu.setRegister((byte)1, math_arg_b);
+        result = (math_arg_a > math_arg_b) ? 1 : 0;
+        cpu.setRegister((byte)2, 0);
+        cpu.execute_three_register((byte)0x0C, (byte) 0, (byte)1, (byte)2);
+        if(!cpu.check_register((byte)2, result)){
+            System.err.println("ERROR WITH GT.");
+            System.err.printf("Expected: %d\n", result);
+            System.err.printf("Got: %d\n", cpu.getRegisters()[2]);
+            passed = false;
+        }
+        //LT
+        cpu.setRegister((byte)0, math_arg_a);
+        cpu.setRegister((byte)1, math_arg_b);
+        result = (math_arg_a < math_arg_b) ? 1 : 0;
+        cpu.setRegister((byte)2, 0);
+        cpu.execute_three_register((byte)0x0D, (byte) 0, (byte)1, (byte)2);
+        if(!cpu.check_register((byte)2, result)){
+            System.err.println("ERROR WITH LT.");
+            System.err.printf("Expected: %d\n", result);
+            System.err.printf("Got: %d\n", cpu.getRegisters()[2]);
+            passed = false;
+        }
+        //EQ
+        cpu.setRegister((byte)0, math_arg_a);
+        cpu.setRegister((byte)1, math_arg_b);
+        result = (math_arg_a == math_arg_b) ? 1 : 0;
+        cpu.setRegister((byte)2, 0);
+        cpu.execute_three_register((byte)0x0E, (byte) 0, (byte)1, (byte)2);
+        if(!cpu.check_register((byte)2, result)){
+            System.err.println("ERROR WITH EQ.");
+            System.err.printf("Expected: %d\n", result);
+            System.err.printf("Got: %d\n", cpu.getRegisters()[2]);
+            passed = false;
+        }
+
+        //Number literal commands
+        //LOAD_LIT
+        int rng_lit = rng.nextInt();
+        cpu.setRegister(CPU.rs,0);
+        cpu.execute_number_literal((byte)0x1D, rng_lit);
+        if(!cpu.check_register(CPU.rs, rng_lit)){
+            System.err.println("ERROR WITH LOAD_LIT.");
+            System.err.printf("Expected: %d\n", rng_lit);
+            System.err.printf("Got: %d\n", cpu.getRegisters()[CPU.rs]);
+            passed = false;
+        }
+        //JUMP_LABEL
+        cpu.setRegister(CPU.pc,0);
+        cpu.execute_number_literal((byte)0x1E, rng_lit);
+        if(!cpu.check_register(CPU.pc, rng_lit)){
+            System.err.println("ERROR WITH JUMP_LABEL.");
+            System.err.printf("Expected: %d\n", rng_lit);
+            System.err.printf("Got: %d\n", cpu.getRegisters()[CPU.pc]);
+            passed = false;
+        }
+
+        //Register Literal Commands
+        //BRANCH_LIT
+        cpu.setRegister((byte) 0, 0);
+        cpu.setRegister((byte) 1, 1);
+        cpu.execute_register_literal((byte)0x1F, (byte) 1, 10);
+        if(!cpu.check_register(CPU.pc, 10)){
+            System.err.println("ERROR WITH BRANCH_LIT.");
+            System.err.printf("Expected: %d\n", 10);
+            System.err.printf("Got: %d\n", cpu.getRegisters()[CPU.pc]);
+            passed = false;
+        }
+        cpu.execute_register_literal((byte)0x1F, (byte) 0, 20);
+        if(cpu.check_register(CPU.pc, 20)){
+            System.err.println("ERROR WITH BRANCH_LIT.");
+            System.err.printf("Expected: %d\n", 16);
+            System.err.printf("Got: %d\n", cpu.getRegisters()[CPU.pc]);
+            passed = false;
+        }
         return passed;
     }
 }

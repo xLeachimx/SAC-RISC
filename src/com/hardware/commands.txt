@@ -140,7 +140,7 @@ Literal Commands:
 0x1D: LOAD_LIT <number literal>
     Description:
         Loads <number literal> into $rs.
-0x1E: JUMP_LIT <number literal>
+0x1E: JUMP_LABEL <number literal>
     Description:
         Loads <number literal> into $pc.
 0x1F: BRANCH_LIT <reg> <number literal>

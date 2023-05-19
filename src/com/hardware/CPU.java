@@ -270,6 +270,7 @@ public class CPU {
      *  Executes the given commands and forwards the pc by five bytes.
      */
     public void execute_number_literal(byte cmd, int lit){
+        registers[pc] += 5;
         switch(cmd){
             case 0x1D -> {
                 registers[rs] = lit;
@@ -286,9 +287,10 @@ public class CPU {
      *  lit is the literal argument to the command.
      *
      * Postcond:
-     *  Executes the given commands and forwards the pc by five bytes.
+     *  Executes the given commands and forwards the pc by six bytes.
      */
     public void execute_register_literal(byte cmd, byte reg, int lit){
+        registers[pc] += 6;
         switch(cmd){
             case 0x1F -> {
                 if(registers[reg] != 0)registers[pc] = lit;
