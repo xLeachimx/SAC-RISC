@@ -41,8 +41,8 @@ public enum CommandList {
     OUTPUT_STR(0x18),
     CAORE_DUMP(0x1C),
     LOAD_LIT(0x1D),
-    JUMP_LIT(0x1E),
-    LOAD_STR(0x1F);
+    JUMP_LABEL(0x1E),
+    BRANCH_LIT(0x1F);
 
     public final byte val;
 

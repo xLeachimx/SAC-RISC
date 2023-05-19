@@ -1,0 +1,7 @@
+This is a list of exit codes and their matching errors:
+
+Code: 100
+Error: Unrecognized command.
+
+Code: 101
+Error: Invalid Register.
