@@ -11,11 +11,11 @@
 package com.assembly;
 
 public class RISCToken {
-    public Tokenizer.RISC_TYPE type;
+    public RISCTokenizer.RISC_TYPE type;
     public String contents;
-    public RISCToken(Tokenizer.RISC_TYPE type, String contents){
+    public RISCToken(RISCTokenizer.RISC_TYPE type, String contents){
         this.type = type;
-        if(type != Tokenizer.RISC_TYPE.STRING) {
+        if(type != RISCTokenizer.RISC_TYPE.STRING) {
             this.contents = contents.toUpperCase();
         }
         else{

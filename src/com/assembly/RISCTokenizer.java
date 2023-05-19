@@ -1,4 +1,4 @@
-/* File: Tokenizer.java
+/* File: RISCTokenizer.java
  * Author: Dr. Michael Andrew Huelsman
  * Created On: 19 May 2023
  * Licence: GNU GPLv3
@@ -15,7 +15,7 @@ import com.assembly.exceptions.AssemblyParseException;
 
 import java.util.ArrayList;
 
-public class Tokenizer {
+public class RISCTokenizer {
     //Enumeration of possible parsing states for tokenizing.
     private enum STATES{
         START,
@@ -25,6 +25,8 @@ public class Tokenizer {
         IN_STR,
         ESC
     }
+
+    //Enumeration of possible token types.
     public enum RISC_TYPE{
         LABEL,
         IDENT,
@@ -32,6 +34,13 @@ public class Tokenizer {
         NUM
     }
 
+    //Precond:
+    //  line is a string containing a line of SAC-RISC code.
+    //  line_num is the line number of the line of SAC-RISC code in the larger program.
+    //
+    //Postcond:
+    //  Returns an ArrayList of RISCToken objects which represented the parsed line.
+    //  If there is any error while parsing the line into tokens an AssemblyParseExecption is thrown.
     public static ArrayList<RISCToken> tokenize(String line, int line_num) throws AssemblyParseException{
         ArrayList<RISCToken> tokens = new ArrayList<>();
         if(line.isBlank())return tokens;
