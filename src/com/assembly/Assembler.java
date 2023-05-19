@@ -124,7 +124,7 @@ public class Assembler {
             cmd = CommandList.valueOf(tokens.get(0).toUpperCase()).val;
         } catch (IllegalArgumentException exp){
             line_match = line_line_table.get(line_num);
-            throw new AssemblyParseException("UNKNOWN COMMAND: " + tokens.get(0).toUpperCase(), line_match);
+            throw new AssemblyParseException("UNKNOWN COMMAND: " + tokens.get(0).toUpperCase(), line_match, 0);
         }
         int literal;
         switch(cmd) {

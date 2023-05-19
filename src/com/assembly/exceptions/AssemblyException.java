@@ -22,7 +22,7 @@ public class AssemblyException extends Exception{
 
     public String toString(){
         StringBuilder res = new StringBuilder();
-        res.append(String.format("Error on linev %d\n", line));
+        res.append(String.format("Error on line %d\n", line));
         res.append(String.format("SAC-RISC Assembly Error of Type %s\n", type.toString()));
         res.append(String.format("Error Message:\n\t%s", label));
         return res.toString();
