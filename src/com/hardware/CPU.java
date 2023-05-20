@@ -30,7 +30,7 @@ public class CPU {
 
     //Member data
     private final int[] registers = new int[REGISTER_COUNT + 4];; //General purpose registers.
-    public final byte ra = 16; //Return address register.
+    public final static byte ra = 16; //Return address register.
     public final static byte sp = 17; //Stack point register.
     public final static byte pc = 18; //Program counter register.
     public final static byte rs = 19; //Intermediate result register.

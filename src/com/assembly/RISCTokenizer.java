@@ -31,7 +31,9 @@ public class RISCTokenizer {
         LABEL,
         IDENT,
         STRING,
-        NUM
+        NUM,
+        CMD,
+        REG
     }
 
     //Precond:
@@ -48,6 +50,8 @@ public class RISCTokenizer {
         STATES state = STATES.START;
         for(int i = 0;i < line.length();i++){
             char current = line.charAt(i);
+            //Consider and remove comments.
+            if(line.charAt(i) == '#')break;
             switch (state){
                 case START -> {
                     if(Character.isWhitespace(current))continue;

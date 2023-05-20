@@ -34,6 +34,13 @@ public class AssemblerTests {
             System.err.printf("Got: %s\n", temp.contents);
             passed = false;
         }
+        temp = new RISCToken(RISCTokenizer.RISC_TYPE.IDENT, "AdD");
+        if(temp.type != RISCTokenizer.RISC_TYPE.CMD){
+            System.err.println("RISCToken class not recognizing commands..");
+            System.err.printf("Expected: %s\n",RISCCommandList.ADD.toString());
+            System.err.printf("Got: %s\n", temp.type.toString());
+            passed = false;
+        }
         return passed;
     }
 
