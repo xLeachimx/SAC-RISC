@@ -15,7 +15,6 @@ public class RISCToken {
     public String contents;
 
     //Extra parsing pass values
-    private static String[] registers = {"$ra", "$rs", "$pc", "$sp"};
     public RISCToken(RISCTokenizer.RISC_TYPE type, String contents){
         this.type = type;
         if(type != RISCTokenizer.RISC_TYPE.STRING) {
@@ -25,14 +24,6 @@ public class RISCToken {
                     if (this.contents.equals(cmd.toString())){
                         this.type = RISCTokenizer.RISC_TYPE.CMD;
                         break;
-                    }
-                }
-                if(this.type == RISCTokenizer.RISC_TYPE.IDENT) {
-                    for(String reg : registers){
-                        if(this.contents.equals(reg)){
-                            this.type = RISCTokenizer.RISC_TYPE.REG;
-                            break;
-                        }
                     }
                 }
             }
@@ -49,6 +40,18 @@ public class RISCToken {
     //  Returns true if both the contents and typrs are the same in both objects.
     public boolean equals(RISCToken other){
         return type == other.type && contents.equals(other.contents);
+    }
+
+    //Precond:
+    //  None.
+    //
+    //Postcond:
+    //  Returns a string representation of the token.
+    public String toString(){
+        StringBuilder temp = new StringBuilder(type.toString());
+        temp.append(": ");
+        temp.append(contents);
+        return temp.toString();
     }
 
     //Precond:

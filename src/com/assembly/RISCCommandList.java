@@ -42,7 +42,8 @@ public enum RISCCommandList {
     CORE_DUMP(0x1C),
     LOAD_LIT(0x1D),
     JUMP_LABEL(0x1E),
-    BRANCH_LABEL(0x1F);
+    BRANCH_LABEL(0x1F),
+    SET(0x20);
 
     public final byte val;
 

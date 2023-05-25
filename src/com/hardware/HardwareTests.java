@@ -416,6 +416,15 @@ public class HardwareTests {
             System.err.printf("Got: %d\n", cpu.getRegisters()[CPU.pc]);
             passed = false;
         }
+        //SET
+        cpu.setRegister((byte) 0, 0);
+        cpu.execute_register_literal((byte)0x20, (byte) 0, 10);
+        if(!cpu.check_register((byte)0, 10)){
+            System.err.println("ERROR WITH SET.");
+            System.err.printf("Expected: %d\n", 10);
+            System.err.printf("Got: %d\n", cpu.getRegisters()[0]);
+            passed = false;
+        }
         return passed;
     }
 }

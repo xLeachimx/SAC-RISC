@@ -12,6 +12,7 @@
 package com.assembly;
 
 import com.assembly.exceptions.AssemblyParseException;
+import com.hardware.CPU;
 
 import java.util.ArrayList;
 
@@ -21,7 +22,8 @@ public class RISCTokenizer {
         START,
         NUM_LIT_NEG,
         NUM_LIT,
-        IDENT_LABEL,
+        LABEL,
+        REGISTER,
         IN_STR,
         ESC
     }
@@ -64,9 +66,11 @@ public class RISCTokenizer {
                             state = STATES.NUM_LIT;
                         else if (current == '-')
                             state = STATES.NUM_LIT_NEG;
+                        else if (current == '$')
+                            state = STATES.REGISTER;
                         //Detect label or identifier.
                         else{
-                            state = STATES.IDENT_LABEL;
+                            state = STATES.LABEL;
                         }
                     }
                 }
@@ -93,7 +97,7 @@ public class RISCTokenizer {
                         temp.append(current);
                     }
                 }
-                case IDENT_LABEL -> {
+                case LABEL -> {
                     if(Character.isWhitespace(current)){
                         //Handle Identifier
                         state = STATES.START;
@@ -133,25 +137,78 @@ public class RISCTokenizer {
                     temp.append(current);
                     state = STATES.IN_STR;
                 }
+                case REGISTER -> {
+                    if(Character.isWhitespace(current)){
+                        state = STATES.START;
+                        temp.deleteCharAt(0);
+                        //Make sure the register is valid
+                        String reg_val = temp.toString().toUpperCase();
+                        String err_label = String.format("Unknown register %s.", reg_val);
+                        try{
+                            int val = Integer.parseInt(reg_val);
+                            if(val < 0 || val > CPU.get_instance().numRegisters())
+                                throw new AssemblyParseException(err_label, line_num, i);
+                        }
+                        catch(NumberFormatException exp){
+                            boolean found = false;
+                            for(String str : CPU.special_registers){
+                                if(str.equals(reg_val)){
+                                    found = true;
+                                    break;
+                                }
+                            }
+                            if(!found)
+                                throw new AssemblyParseException(err_label, line_num, i);
+                        }
+                        tokens.add(new RISCToken(RISC_TYPE.REG, reg_val));
+                        temp.setLength(0);
+                    }
+                    else
+                        temp.append(current);
+                }
             }
         }
         //Handle what happens when the end of line is hit.
         switch (state){
             case NUM_LIT_NEG -> {
                 String err_label = "Unexpected char end of number literal";
-                throw new AssemblyParseException(err_label, line_num, 0);
+                throw new AssemblyParseException(err_label, line_num, line.length()-1);
             }
             case NUM_LIT -> {
                 //Handle end of number
                 tokens.add(new RISCToken(RISC_TYPE.NUM, temp.toString()));
             }
-            case IDENT_LABEL -> {
+            case LABEL -> {
                 //Handle Identifier
                 tokens.add(new RISCToken(RISC_TYPE.IDENT, temp.toString()));
             }
             case IN_STR, ESC -> {
                 String err_label = "Incomplete string.";
-                throw new AssemblyParseException(err_label, line_num, 0);
+                throw new AssemblyParseException(err_label, line_num, line.length()-1);
+            }
+            case REGISTER -> {
+                //Make sure the register is valid
+                temp.deleteCharAt(0);
+                String reg_val = temp.toString().toUpperCase();
+                String err_label = String.format("Unknown register %s.", reg_val);
+                try{
+                    int val = Integer.parseInt(reg_val);
+                    if(val < 0 || val > CPU.get_instance().numRegisters())
+                        throw new AssemblyParseException(err_label, line_num, line.length()-1);
+                }
+                catch(NumberFormatException exp){
+                    boolean found = false;
+                    for(String str : CPU.special_registers){
+                        if(str.equals(reg_val)){
+                            found = true;
+                            break;
+                        }
+                    }
+                    if(!found)
+                        throw new AssemblyParseException(err_label, line_num, line.length()-1);
+                }
+                tokens.add(new RISCToken(RISC_TYPE.REG, reg_val));
+                temp.setLength(0);
             }
         }
         return tokens;

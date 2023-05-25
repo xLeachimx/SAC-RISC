@@ -16,6 +16,7 @@ public class CPU {
     //Constants
     private static final int REGISTER_COUNT = 16;
     private static final int ls_byte = 0xFF;
+    public static final String[] special_registers = {"RA","SP","PC","RS"};
 
     //Singleton Setup
     private static CPU instance = null;
@@ -48,11 +49,9 @@ public class CPU {
     public boolean check_register(byte reg, int value){
         return registers[reg] == value;
     }
-
     public boolean is_active(){
         return active;
     }
-
     public void set_active(boolean value){
         active = value;
     }
@@ -62,7 +61,9 @@ public class CPU {
     public void setRegister(byte reg, int value){
         registers[reg] = value;
     }
-
+    public int numRegisters(){
+        return registers.length;
+    }
     /* Precond:
      *  None.
      *
@@ -101,8 +102,11 @@ public class CPU {
                 literal = RAM.getInstance().load_word(registers[pc]+1);
                 execute_number_literal(cmd, literal);
                 break;
-            //String literal commands
-            case 0x1F:
+            //Register literal commands
+            case 0x1F, 0x20:
+                reg1 = RAM.getInstance().load_byte(registers[pc]+1);
+                literal = RAM.getInstance().load_word(registers[pc]+2);
+                execute_register_literal(cmd, reg1, literal);
                 break;
             default:
                 System.exit(100);
@@ -293,7 +297,12 @@ public class CPU {
         registers[pc] += 6;
         switch(cmd){
             case 0x1F -> {
+                //BRANCH_LIT
                 if(registers[reg] != 0)registers[pc] = lit;
+            }
+            case 0x20 ->{
+                //SET
+                registers[reg] = lit;
             }
         }
     }

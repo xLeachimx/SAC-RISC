@@ -147,3 +147,6 @@ Literal Commands:
     Description:
         Loads <number literal> into $pc if the value in
         <reg> is non-zero.
+0x20: SET <reg> <number_literal>
+    Description:
+        Loades <number literal> into <reg>.
