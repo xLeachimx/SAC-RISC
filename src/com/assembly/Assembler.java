@@ -12,14 +12,10 @@ package com.assembly;
 import com.assembly.exceptions.AssemblyException;
 import com.assembly.exceptions.AssemblyParseException;
 import com.assembly.exceptions.AssemblyUnknownArgumentException;
-import com.hardware.RAM;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class Assembler {
     //Singleton Variable
@@ -121,10 +117,10 @@ public class Assembler {
         int line_match;
         byte cmd = 0;
         try {
-            cmd = CommandList.valueOf(tokens.get(0).toUpperCase()).val;
+            cmd = RISCCommandList.valueOf(tokens.get(0).toUpperCase()).val;
         } catch (IllegalArgumentException exp){
             line_match = line_line_table.get(line_num);
-            throw new AssemblyParseException("UNKNOWN COMMAND: " + tokens.get(0).toUpperCase(), line_match);
+            throw new AssemblyParseException("UNKNOWN COMMAND: " + tokens.get(0).toUpperCase(), line_match, 0);
         }
         int literal;
         switch(cmd) {

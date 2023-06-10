@@ -1,4 +1,4 @@
-/* File: CommandList.java
+/* File: RISCCommandList.java
  * Author: Dr. Michael Andrew Huelsman
  * Created On: 20 Mar 2023
  * Licence: GNU GPLv3
@@ -9,7 +9,7 @@
 
 package com.assembly;
 
-public enum CommandList {
+public enum RISCCommandList {
     NOP(0x00),
     INPUT(0x01),
     INPUT_CHAR(0x02),
@@ -39,14 +39,15 @@ public enum CommandList {
     STORE(0x19),
     STORE_BYTE(0x1A),
     OUTPUT_STR(0x18),
-    CAORE_DUMP(0x1C),
+    CORE_DUMP(0x1C),
     LOAD_LIT(0x1D),
     JUMP_LABEL(0x1E),
-    BRANCH_LIT(0x1F);
+    BRANCH_LABEL(0x1F),
+    SET(0x20);
 
     public final byte val;
 
-    private CommandList(int val){
+    private RISCCommandList(int val){
         this.val = (byte)val;
     }
 }

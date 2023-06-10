@@ -10,8 +10,15 @@
 package com.assembly.exceptions;
 
 public class AssemblyParseException extends AssemblyException{
-    public AssemblyParseException(String label, int line) {
+    private int column;
+    public AssemblyParseException(String label, int line, int char_num) {
         super(label, line);
+        column = char_num;
         type = ExceptionTypes.PARSE_ERROR;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("Error at column: %d\n", column) + super.toString();
     }
 }
