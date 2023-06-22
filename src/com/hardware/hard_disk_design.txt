@@ -1,0 +1,31 @@
+Atlantis pseudo-drive uses a RandomAccessFile with a simulated SSD configuration.
+
+Drive fields:
+    Size: the number of blocks in the file (limit: the highest positive int)
+    Block size: the size of an individual block
+    Name: the name of the file to store the "disk" in.
+
+Drive Preamble:
+    0-2: Magic numbers
+    3-6: Disk blocks
+    7-10: Block size
+
+Block Info:
+    0: Free (0 means free, 1 means used)
+
+File Info:
+    0: File type
+    1-8: Next block (-1 means last block)
+    9-11: Bytes used
+    12- : Data
+
+File Types:
+    0 -> Directory
+    1 -> General Atlantis Executable File (GATE file)
+    2 -> Direction Holding Data File (DHD file)
+    3 -> Text File
+
+GATE File:
+    0-3: Starting PC (Assumes data block starts at 0)
+    4-X: Data block
+    X- : Program code

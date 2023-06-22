@@ -5,3 +5,21 @@ Error: Unrecognized command.
 
 Code: 101
 Error: Invalid Register.
+
+Code: 200
+Error: Could not open hard disk.
+
+Code: 201
+Error: Could not write to hard disk.
+
+Code: 202
+Error: Could not read from hard disk.
+
+Code: 203
+Error: Could not format hard disk.
+
+Code: 204
+Error: Could not delete block in hard disk.
+
+Code: 205
+Error: Could not open existing hard disk.

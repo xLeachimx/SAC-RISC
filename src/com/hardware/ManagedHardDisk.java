@@ -15,147 +15,134 @@
 
 package com.hardware;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Random;
+import java.util.RandomAccess;
 
-public class ManagedHardDisk{
+public class ManagedHardDisk {
     //Constants
     private static final byte[] magic = {11, 13, 27};
     private static final int byte_mask = 0xFFFF;
+    private static final long KB = 1024L;
+    private static final long MB = KB*KB;
 
+    //Instance defaults
+    private static final long default_disk_size = 10*MB;
+    private static final long default_block_size = KB;
+    private static final String default_disk_name = "SAC.dsk";
 
     //Singleton Variables
-    private static ManagedHardDisk instance = null;
+    public static ManagedHardDisk instance = null;
 
-    //Instance variables
-    private HardDisk disk;
-    private final long raw_disk;
-    private ArrayList<SAC_File> files;
-
-
-    //=========================
-    //  Singleton Methods
-    //=========================
-
-    public static ManagedHardDisk getInstance(){
-        if(instance == null)instance = new ManagedHardDisk();
+    //Singleton Methods
+    //Creation Methods
+    public static ManagedHardDisk create(){
+        return create(default_disk_name, default_disk_size);
+    }
+    public static ManagedHardDisk create(String filename, long disk_size){
+        if(instance != null)unmount();
+        instance = new ManagedHardDisk(filename, disk_size);
         return instance;
     }
 
-    public static ManagedHardDisk getInstance(String diskname){
-        if(instance == null)instance = new ManagedHardDisk(diskname);
-        else if(!instance.disk.getFilename().equals(diskname)){
-            instance.close();
-            instance = new ManagedHardDisk(diskname);
-        }
+    public static ManagedHardDisk mount(String filename){
+        if(instance != null)unmount();
+        instance = new ManagedHardDisk(filename);
         return instance;
     }
 
-
-    //=========================
-    //  Instance Methods
-    //=========================
-
-    //Constructor
-    private ManagedHardDisk(){
-        disk = HardDisk.getInstance();
-        if(!isFormatted())format();
-        raw_disk = disk.getSize()/2;
-        files = new ArrayList<>();
-        populate();
+    public static ManagedHardDisk get_instance(){
+        if(instance == null)throw new NullPointerException();
+        return instance;
     }
 
-    private ManagedHardDisk(String diskname){
-        disk = HardDisk.getInstance(diskname);
-        if(!isFormatted())format();
-        raw_disk = disk.getSize()/2;
-        files = new ArrayList<>();
-        populate();
+    public static void unmount(){
+        if(instance != null)instance.close();
+        instance = null;
     }
 
-    //===========================
-    //  Public Methods
-    //===========================
+    //Instance Variables
+    private int blocks;
+    private long disk_size;
+    private final String filename;
+    private final File handle;
+    private RandomAccessFile access;
+    private static final long preamble_length = magic.length + Integer.BYTES; //How long the disk preamble is.
+
+
+    //Instance Methods
 
     //Precond:
-    //  filename is the name of the file to delete.
+    //  filename is the name of the file where the data is to be stored.
+    //  disk_size is the size to make the disk.
     //
     //Postcond:
-    //  Removes (but does not wipe, the file with the given name.
-    public void delete_file(String filename){
-        for(int i = 0;i < files.size();i++){
-            if(files.get(i).name.equals(filename)){
-                erase_file(files.get(i));
-                files.remove(i);
-                return;
-            }
-        }
-    }
-
-    public void close(){
-        for(SAC_File f : files){
-            f.write(disk);
-        }
-        disk.close();
-        disk = null;
-        files = null;
-    }
-
-    //===========================
-    //  Private Methods
-    //===========================
-    private boolean isFormatted(){
-        long fp = disk.getFilePointer();
-        disk.seek(0);
-        byte[] magic = disk.read(3);
-        disk.seek(fp);
-        return Arrays.equals(magic, ManagedHardDisk.magic);
-    }
-
-    //Precond:
-    //  None.
-    //
-    //Postcond:
-    //  Populates the file table for the disk.
-    private void populate(){
-        disk.seek(3);
-        while(disk.getFilePointer() < raw_disk){
-            long start = disk.getFilePointer();
-            byte valid = disk.readByte();
-            if(valid == 1) {
-                int size = disk.readInt();
-                String name = disk.readString();
-                files.add(new SAC_File(name, start, size));
-            }
-            else seek_next();
-        }
-    }
-
-    //Precond:
-    //  f is a valid SAC_File.
-    //
-    //Postcond:
-    //  Erases the file from the disk.
-    private void erase_file(SAC_File f){
-        disk.seek(f.start);
-        disk.write((byte)0);
-    }
-
-    //Precond:
-    //  None.
-    //Postcond:
-    //  Defragments the hard disk.
-    private void defrag(){
-        for(SAC_File f : files){
-            f.read_file(disk);
-        }
+    //  Creates a new ManagedHardDisk object with data stored in the given filename.
+    //  Creates a new hard disk file, of the specified size, that has been formatted and cleared.
+    private ManagedHardDisk(String filename, long disk_size){
+        this.filename = filename;
+        this.disk_size = disk_size;
+        handle = new File(filename);
+        blocks = (int)(disk_size/default_block_size);
+        if(disk_size % default_block_size != 0)blocks += 1;
+        this.disk_size = (blocks*(default_block_size+1)) + preamble_length;
+        access = null;
         format();
-        long start = 3L;
-        for(SAC_File f : files){
-            f.start = start;
-            f.write(disk);
-            start = disk.getFilePointer();
-            f.close(disk);
+        close();
+    }
+
+    //Precond:
+    //  filename is the name of the file where the data is stored.
+    //
+    //Postcond:
+    //  Creates a new ManagedHardDisk object with data stored in the given filename.
+    //  Opens an existing hard disk file.
+    private ManagedHardDisk(String filename){
+        this.filename = filename;
+        handle = new File(filename);
+        access = null;
+        open();
+        try {
+            disk_size = access.length();
+            access.seek(0);
+            for(int i = 0;i < magic.length; i++){
+                if(magic[i] != access.readByte()){
+                    System.err.println("Problem opening existing hard disk in " + filename);
+                    close();
+                    System.exit(205);
+                }
+            }
+            blocks = access.readInt();
+        } catch (IOException exp) {
+            System.err.println("Problem opening existing hard disk in " + filename);
+            exp.printStackTrace();
+            close();
+            System.exit(205);
+        }
+        close();
+    }
+
+    //======================
+    //  File Access Methods
+    //======================
+
+    //Precond:
+    //  None.
+    //
+    //Postcond:
+    //  Opens the hard disk file so it can be read from and written to.
+    public void open(){
+        if(access != null)return;
+        try {
+            access = new RandomAccessFile(handle, "rw");
+        } catch (IOException exp){
+            System.err.println("Problem opening hard disk.");
+            exp.printStackTrace();
+            System.exit(200);
         }
     }
 
@@ -163,81 +150,187 @@ public class ManagedHardDisk{
     //  None.
     //
     //Postcond:
-    //  Formats the disk to empty (-1 for all bytes.)
-    private void format(){
-        byte[] blank_kb = new byte[(int)HardDisk.KB];
-        Arrays.fill(blank_kb, (byte)-1);
-        disk.seek(0);
-        for(long i = 0;i < disk.getSize()/HardDisk.KB;i++){
-            disk.write(blank_kb);
+    //  Closes file access, if the file is open.
+    public void close(){
+        if(access == null)return;
+        try {
+            access.close();
+        } catch (IOException exp){
+            System.err.println("Problem closing hard disk.");
+            exp.printStackTrace();
+            System.exit(200);
         }
-        disk.seek(0);
-        disk.write(magic);
-        disk.seek(0);
     }
+
+    //=========================
+    //  Hard Disk Read/Write
+    //=========================
+
+    //Precond:
+    //  bytes is an array of byte values to be written to the disk.
+    //  block is the block to write the bytes to.
+    //  offset is how far to offset the writing location from the beginning of the block.
+    //
+    //Postcond:
+    //  Writes the bytes at the specified location.
+    //  Sets the block flag to in-use.
+    //  WARNING: This does not prevent writing past block boundary.
+    public void write_bytes(byte[] bytes, long block, long offset){
+        if(access == null){
+            System.err.println("Attempted to write to a closed hard disk.");
+            System.exit(201);
+        }
+        try{
+            long data_addr = compute_address(block, offset);
+            long block_flag = compute_address(block, -1);
+            access.seek(block_flag);
+            access.writeByte(1);
+            access.seek(data_addr);
+            access.write(bytes);
+        } catch (IOException exp){
+            System.err.println("Problem writing bytes to disk.");
+            exp.printStackTrace();
+            System.exit(201);
+        }
+    }
+
+    //Precond:
+    //  val is a byte value to be written to the disk.
+    //  block is the block to write the bytes to.
+    //  offset is how far to offset the writing location from the beginning of the block.
+    //
+    //Postcond:
+    //  Writes the byte at the specified location.
+    //  Sets the block flag to in-use.
+    //  WARNING: This does not prevent writing past block boundary.
+    public void write_byte(byte val, long block, long offset){
+        if(access == null){
+            System.err.println("Attempted to write to a closed hard disk.");
+            System.exit(201);
+        }
+        try{
+            long data_addr = compute_address(block, offset);
+            long block_flag = compute_address(block, -1);
+            access.seek(block_flag);
+            access.writeByte(1);
+            access.seek(data_addr);
+            access.writeByte(val);
+        } catch (IOException exp){
+            System.err.println("Problem writing bytes to disk.");
+            exp.printStackTrace();
+            System.exit(201);
+        }
+    }
+
+    //Precond:
+    //  length is the number of bytes to read from the disk.
+    //  block is the block to write the bytes to.
+    //  offset is how far to offset the writing location from the beginning of the block.
+    //
+    //Postcond:
+    //  Reads the bytes at the specified location.
+    //  WARNING: This does not prevent reading past block boundary.
+    public byte[] read_bytes(int length, long block, long offset){
+        if(access == null){
+            System.err.println("Attempted to read from a closed hard disk.");
+            System.exit(202);
+        }
+        byte[] buffer = new byte[length];
+        try{
+            long data_addr = compute_address(block, offset);
+            access.seek(data_addr);
+            access.read(buffer);
+        } catch (IOException exp){
+            System.err.println("Problem reading bytes from disk.");
+            exp.printStackTrace();
+            System.exit(202);
+        }
+        return buffer;
+    }
+
+    //Precond:
+    //  block is the block to write the bytes to.
+    //  offset is how far to offset the writing location from the beginning of the block.
+    //
+    //Postcond:
+    //  Reads the bytes at the specified location.
+    //  WARNING: This does not prevent reading past block boundary.
+    public byte read_byte(long block, long offset){
+        if(access == null){
+            System.err.println("Attempted to read from a closed hard disk.");
+            System.exit(202);
+        }
+        try{
+            long data_addr = compute_address(block, offset);
+            access.seek(data_addr);
+            return access.readByte();
+        } catch (IOException exp){
+            System.err.println("Problem reading bytes from disk.");
+            exp.printStackTrace();
+            System.exit(202);
+        }
+        return 0;
+    }
+
+    //========================
+    //  Hard Disk Management
+    //=-======================
 
     //Precond:
     //  None.
     //
     //Postcond:
-    //  Seeks the next non-blank space in memory.
-    private void seek_next(){
-        while(disk.read(1)[0] == -1 && disk.getFilePointer() < disk.getSize());
-        disk.seek(disk.getFilePointer()-1);
+    //  Performs a quick format of the hard disk.
+    public void format(){
+        open();
+        try{
+            access.setLength(disk_size);
+            access.seek(0);
+            access.write(magic);
+            access.writeInt(blocks);
+        } catch(IOException exp){
+            System.err.println("Problem formatting hard disk.");
+            exp.printStackTrace();
+            System.exit(203);
+        }
+        for(long block = 0; block < blocks;block++){
+            free_block(block);
+        }
+        close();
     }
 
-    //==============================
-    //  Private Classes
-    //==============================
-    private static class SAC_File{
-        private final String name;
-        public long start;
-        private final int length;
-        private byte[] data;
-        private boolean changed;
-
-        public SAC_File(String name, long start, int length){
-            this.name = name;
-            this.start = start;
-            this.length = length;
-            data = null;
-            changed = false;
+    //Precond:
+    //  block is the block to free.
+    //
+    //Postcond:
+    //  Changes the block's flag to free.
+    public void free_block(long block){
+        if(access == null){
+            System.err.println("Attempted to deleting block data int closed hard disk.");
+            System.exit(204);
         }
-
-        public byte[] read_file(HardDisk disk){
-            if(data != null)return data;
-            long data_start = start + Integer.BYTES + (2L *name.length()) + 2L;
-            disk.seek(data_start);
-            data = disk.read(length);
-            return data;
+        try{
+            long block_flag = compute_address(block, -1);
+            access.seek(block_flag);
+            access.writeByte(0);
+        } catch (IOException exp){
+            System.err.println("Problem deleting block data from disk.");
+            exp.printStackTrace();
+            System.exit(204);
         }
+    }
 
-        public boolean change(byte[] data, int offset){
-            if(!can_modify(offset, data.length))return false;
-            System.arraycopy(data, 0, this.data, offset, data.length);
-            changed = true;
-            return true;
-        }
+    //====================
+    //  Private Methods
+    //====================
 
-        public void write(HardDisk disk){
-            if(data == null)return;
-            byte[] byte_name = name.getBytes();
-            disk.seek(start);
-            disk.write((byte)1);
-            disk.write(length);
-            disk.write(byte_name);
-            disk.write((byte)0);
-            disk.write(data);
-        }
-
-        public void close(HardDisk disk){
-            if(changed)write(disk);
-            data = null;
-        }
-
-        private boolean can_modify(int offset, int length){
-            return offset+length < this.length;
-        }
-
+    //Precond:
+    //  block is the block of the address.
+    //  offset is the byte offset of the address.
+    //
+    //Postcond:
+    //  Returns the byte address block and offset.
+    private long compute_address(long block, long offset){
+        return (((default_block_size+1) * block) + offset) + preamble_length + 1;
     }
 }
