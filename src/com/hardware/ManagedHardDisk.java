@@ -306,7 +306,7 @@ public class ManagedHardDisk {
     //  Changes the block's flag to free.
     public void free_block(long block){
         if(access == null){
-            System.err.println("Attempted to deleting block data int closed hard disk.");
+            System.err.println("Attempted to deleting block data in closed hard disk.");
             System.exit(204);
         }
         try{
@@ -318,6 +318,31 @@ public class ManagedHardDisk {
             exp.printStackTrace();
             System.exit(204);
         }
+    }
+
+    //Precond:
+    //  None.
+    //
+    //Postcond:
+    //  Returns the next free block.
+    //  Returns -1 if there is no free block remaining.
+    public long next_free_block(){
+        if(access == null){
+            System.err.println("Attempted to search closed hard disk.");
+            System.exit(206);
+        }
+        try{
+            for(long block = 0; block < blocks;block++) {
+                long block_flag = compute_address(block, -1);
+                access.seek(block_flag);
+                if(access.readByte() == 0)return block;
+            }
+        } catch (IOException exp){
+            System.err.println("Problem checking block data from disk.");
+            exp.printStackTrace();
+            System.exit(204);
+        }
+        return -1;
     }
 
     //====================

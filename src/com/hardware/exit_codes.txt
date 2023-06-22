@@ -23,3 +23,6 @@ Error: Could not delete block in hard disk.
 
 Code: 205
 Error: Could not open existing hard disk.
+
+Code: 206
+Error: Could not scan hard disk.

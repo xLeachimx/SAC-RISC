@@ -29,9 +29,11 @@ public class HardwareTests {
         System.setOut(new PrintStream(out_pipe));
         boolean RAM_status = RAM_test();
         boolean CPU_status = CPU_test();
+        boolean disk_status = disk_tests();
         System.setOut(temp);
         if(RAM_status)System.out.println("RAM tests passed.");
         if(CPU_status)System.out.println("CPU tests passed.");
+        if(disk_status)System.out.println("Hard Disk tests passed.");
     }
 
     public static boolean RAM_test(){
@@ -425,6 +427,11 @@ public class HardwareTests {
             System.err.printf("Got: %d\n", cpu.getRegisters()[0]);
             passed = false;
         }
+        return passed;
+    }
+
+    public static boolean disk_tests(){
+        boolean passed = true;
         return passed;
     }
 }
