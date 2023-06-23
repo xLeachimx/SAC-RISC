@@ -27,8 +27,8 @@ public class ManagedHardDisk {
     //Constants
     private static final byte[] magic = {11, 13, 27};
     private static final int byte_mask = 0xFFFF;
-    private static final long KB = 1024L;
-    private static final long MB = KB*KB;
+    public static final long KB = 1024L;
+    public static final long MB = KB*KB;
 
     //Instance defaults
     private static final long default_disk_size = 10*MB;
@@ -155,6 +155,7 @@ public class ManagedHardDisk {
         if(access == null)return;
         try {
             access.close();
+            access = null;
         } catch (IOException exp){
             System.err.println("Problem closing hard disk.");
             exp.printStackTrace();
