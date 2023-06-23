@@ -29,9 +29,11 @@ public class HardwareTests {
         System.setOut(new PrintStream(out_pipe));
         boolean RAM_status = RAM_test();
         boolean CPU_status = CPU_test();
+        boolean disk_status = disk_tests();
         System.setOut(temp);
         if(RAM_status)System.out.println("RAM tests passed.");
         if(CPU_status)System.out.println("CPU tests passed.");
+        if(disk_status)System.out.println("Hard Disk tests passed.");
     }
 
     public static boolean RAM_test(){
@@ -425,6 +427,47 @@ public class HardwareTests {
             System.err.printf("Got: %d\n", cpu.getRegisters()[0]);
             passed = false;
         }
+        return passed;
+    }
+
+    public static boolean disk_tests(){
+        boolean passed = true;
+        File temp = new File("SAC.dsk");
+        if(temp.exists())temp.delete();
+        ManagedHardDisk disk = ManagedHardDisk.create("SAC.dsk", 10*ManagedHardDisk.MB);
+        disk.open();
+        //Writing Tests
+        byte[] vals = {0, 45, 67, 43};
+        disk.write_bytes(vals, 0, 0);
+        disk.write_byte((byte) 4, 0, 1);
+        //Reading Tests
+        byte[] rec = disk.read_bytes(4, 0, 0);
+        byte flag = disk.read_byte(0, -1);
+        //Check values
+        if(flag != 1){
+            System.err.println("Disk did not properly free flip flag.");
+            System.err.printf("Expected: %d\n", 1);
+            System.err.printf("Got: %d\n", flag);
+            passed = false;
+        }
+        vals[1] = 4;
+        if(vals.length == rec.length) {
+            for (int i = 0; i < vals.length; i++) {
+                if(vals[i] != rec[i]){
+                    System.err.println("Disk did read values properly.");
+                    System.err.printf("Expected: %d\n", vals[i]);
+                    System.err.printf("Got: %d\n", rec[i]);
+                    passed = false;
+                }
+            }
+        }
+        else{
+            System.err.println("Incorrect number of bytes read from disk.");
+            System.err.printf("Expected: %d\n", vals.length);
+            System.err.printf("Got: %d\n", rec.length);
+            passed = false;
+        }
+        disk.close();
         return passed;
     }
 }
