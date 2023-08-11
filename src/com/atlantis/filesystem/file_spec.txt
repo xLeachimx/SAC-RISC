@@ -1,0 +1,24 @@
+File Info (per block):
+    0-7: Next block (-1 means last block)
+    8-11: Bytes used
+    12- : Data
+
+File Types:
+    0 -> Directory
+    1 -> General Atlantis Executable File (GATE file)
+    2 -> Direction Holding Data File (DHD file)
+    3 -> Text File
+    4 -> Data File
+
+GATE File:
+    0-3: Starting PC (Assumes data block starts at 0)
+    4-X: Data block
+    X- : Program code
+
+Directory File (data):
+    0- : File name list
+        File list entry:
+        0: 1 if in use, 0 otherwise.
+        1-161: String name of file/directory
+        162: File type
+        163-169: File block start

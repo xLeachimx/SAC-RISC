@@ -322,6 +322,27 @@ public class ManagedHardDisk {
     }
 
     //Precond:
+    //  block is the block to free.
+    //
+    //Postcond:
+    //  Changes the block's flag to in-use.
+    public void allocate_block(long block){
+        if(access == null){
+            System.err.println("Attempted to allocate block data in closed hard disk.");
+            System.exit(204);
+        }
+        try{
+            long block_flag = compute_address(block, -1);
+            access.seek(block_flag);
+            access.writeByte(1);
+        } catch (IOException exp){
+            System.err.println("Problem deleting block data from disk.");
+            exp.printStackTrace();
+            System.exit(204);
+        }
+    }
+
+    //Precond:
     //  None.
     //
     //Postcond:
@@ -344,6 +365,16 @@ public class ManagedHardDisk {
             System.exit(204);
         }
         return -1;
+    }
+
+    /* Precond:
+     *  None.
+     *
+     * Postcond:
+     *  Returns the size of the hard disk block.
+     */
+    public long get_block_size(){
+        return default_block_size;
     }
 
     //====================

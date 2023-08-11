@@ -14,6 +14,8 @@ package com.atlantis.filesystem;
 import com.hardware.ManagedHardDisk;
 
 public class FileManager {
+    //Constants
+    public static final int file_block_preamble_length = 12;
     //Singleton Setup
     //Singleton Variables
     private static FileManager instance = null;
@@ -43,16 +45,31 @@ public class FileManager {
 
     //Instance Variables
     private ManagedHardDisk disk;
+    private AFSDirectory root;
 
     private FileManager(ManagedHardDisk disk){
         this.disk = disk;
     }
 
+    /*Precond:
+     *  None.
+     *
+     * Postcond:
+     *  Formats (and therefore blanks) the hard disk for use with AFS
+     */
     public void format(){
-        //Stub
+        disk.format();
+        root = new AFSDirectory(disk, "", 0);
     }
 
+    /* Precond:
+     *  None.
+     *
+     * Postcond:
+     *  Closes the disk and root directory.
+     */
     public void close(){
-        //Stub
+        disk.close();
+        root = null;
     }
 }

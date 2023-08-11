@@ -12,20 +12,3 @@ Drive Preamble:
 
 Block Info:
     0: Free (0 means free, 1 means used)
-
-File Info:
-    0: File type
-    1-8: Next block (-1 means last block)
-    9-11: Bytes used
-    12- : Data
-
-File Types:
-    0 -> Directory
-    1 -> General Atlantis Executable File (GATE file)
-    2 -> Direction Holding Data File (DHD file)
-    3 -> Text File
-
-GATE File:
-    0-3: Starting PC (Assumes data block starts at 0)
-    4-X: Data block
-    X- : Program code

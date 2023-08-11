@@ -1,0 +1,3 @@
+Add write commands to text and directory file types.
+Add compilation commands to DHD
+Create GATE file type
